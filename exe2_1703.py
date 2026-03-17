@@ -17,23 +17,50 @@ class Calc:
             return "Erro: Divisão por zero"
         return self.num1 / self.num2
 
+historico = []
+
 while True:
-    print("\nCalculadora \n 1. Soma \n 2. Subtrair \n 3. Multiplicar \n 4. Dividir \n 5. Sair")
+    print("\nCalculadora \n 1. Soma \n 2. Subtrair \n 3. Multiplicar \n 4. Dividir \n 5. Historico\n 6. Sair")
     escolha = input("Selecione: ")
 
-    if escolha == '5':
+    if escolha == '6':
+        print("Saindo da calculadora")
         break
-
-    n1 = input("1º número: ")
-    n2 = input("2º número: ")
     
-    minha_calc = Calc(n1, n2)
+    if escolha == '5':
+        print("\n--- Histórico ---")
+        for i in range(len(historico)):
+            print(historico[i])
+        continue
 
-    if escolha == '1':
-        print(f"Resultado: {minha_calc.somar()}")
-    elif escolha == '2':
-        print(f"Resultado: {minha_calc.subtrair()}")
-    elif escolha == '3':
-        print(f"Resultado: {minha_calc.multiplicar()}")
-    elif escolha == '4':
-        print(f"Resultado: {minha_calc.dividir()}")
+    try:
+        n1 = input("1º número: ")
+        n2 = input("2º número: ")
+        minha_calc = Calc(n1, n2)
+        
+        if escolha == '1':
+            resultado = minha_calc.somar()
+            print(f"Resultado: {resultado}")
+            historico.append(f"Soma de {n1} + {n2} = {resultado}")
+            
+        elif escolha == '2':
+            resultado = minha_calc.subtrair()
+            print(f"Resultado: {resultado}")
+            historico.append(f"Subtração de {n1} - {n2} = {resultado}")
+            
+        elif escolha == '3':
+            resultado = minha_calc.multiplicar()
+            print(f"Resultado: {resultado}")
+            historico.append(f"Multiplicação de {n1} * {n2} = {resultado}")
+            
+        elif escolha == '4':
+            resultado = minha_calc.dividir()
+            print(f"Resultado: {resultado}")
+            historico.append(f"Divisão de {n1} / {n2} = {resultado}")
+        else:
+            print("Opção inválida.")
+
+    except ValueError:
+        print("Erro: Por favor, digite apenas números.")
+    except Exception as e:
+        print(f"Ocorreu um erro: {e}")
