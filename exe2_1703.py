@@ -32,7 +32,6 @@ while True:
         for i in range(len(historico)):
             print(historico[i])
         continue
-
     try:
         n1 = input("1º número: ")
         n2 = input("2º número: ")

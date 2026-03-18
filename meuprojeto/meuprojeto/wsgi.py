@@ -1,5 +1,5 @@
 """
-WSGI config for django_1703 project.
+WSGI config for meuprojeto project.
 
 It exposes the WSGI callable as a module-level variable named ``application``.
 
@@ -11,6 +11,6 @@ import os
 
 from django.core.wsgi import get_wsgi_application
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'django_1703.settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'meuprojeto.settings')
 
 application = get_wsgi_application()
