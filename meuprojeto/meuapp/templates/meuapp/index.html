@@ -392,30 +392,37 @@
       document.getElementById('placeholder').style.display = 'block';
     }
   }
-
+  const API_URL = "{{ API_KEY }}";
+  
   async function buscarFato() {
     const btn = document.getElementById('btn');
     btn.disabled = true;
     setState('loading');
 
     try {
-      const res = await fetch('https://pokefacts.vercel.app/api/fact');
-
+      const res = await fetch('/api/pokemon-proxy/'); 
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
-      const data = await res.json();
+      const result = await res.json();
+      console.log("Dados reais:", result);
 
-      const fato = data.fact || data.message || data.data || JSON.stringify(data);
-
-      document.getElementById('factText').textContent = fato;
-      setState('fact');
-
-      count++;
-      document.getElementById('count').textContent = count;
-      document.getElementById('counter').style.display = 'block';
+      // CORREÇÃO BASEADA NA IMAGEM:
+      // O texto está em result.data[0]
+      if (result && result.data && result.data.length > 0) {
+          const fato = result.data[0]; // Pega o texto direto da lista
+          
+          document.getElementById('factText').textContent = fato;
+          setState('fact');
+          
+          count++;
+          document.getElementById('count').textContent = count;
+          document.getElementById('counter').style.display = 'block';
+      } else {
+          console.error("Formato não reconhecido", result);
+          setState('error');
+      }
 
       btn.innerHTML = '<span class="btn-icon">🔄</span> Outro fato';
-
     } catch (err) {
       console.error(err);
       setState('error');
