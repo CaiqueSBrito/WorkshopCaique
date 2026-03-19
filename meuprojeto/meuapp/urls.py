@@ -9,4 +9,6 @@ urlpatterns = [
     path('index/', views.home, name='home'),
     path("api/pokemons/", views.PokemonViewSet.as_view({'get': 'list'}), name="buscar_pokemon"),
     path('api/', include(router.urls)),
+    path('pokemons/all/', views.pokemon_list, name='pokemon_list'),
+    path('tutorial/', views.tutorial, name='tutorial'),
 ]

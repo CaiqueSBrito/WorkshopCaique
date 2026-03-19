@@ -1,0 +1,2382 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Django REST API — Tutorial Completo</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #12121a;
+    --surface2: #1a1a26;
+    --border: #2a2a40;
+    --accent: #6c63ff;
+    --accent2: #ff6584;
+    --accent3: #43e97b;
+    --accent4: #f7971e;
+    --text: #e8e8f0;
+    --muted: #7878a0;
+    --code-bg: #0d0d18;
+    --python: #3572A5;
+    --js: #f1e05a;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    line-height: 1.7;
+    overflow-x: hidden;
+  }
+
+  /* ===== SCROLLBAR ===== */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 3px; }
+
+  /* ===== NOISE OVERLAY ===== */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 9999;
+    opacity: 0.4;
+  }
+
+  /* ===== SIDEBAR NAV ===== */
+  .sidebar {
+    position: fixed;
+    left: 0; top: 0;
+    width: 260px; height: 100vh;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    overflow-y: auto;
+    z-index: 100;
+    padding: 0 0 2rem 0;
+    transition: transform 0.3s ease;
+  }
+
+  .sidebar-logo {
+    padding: 1.5rem 1.5rem 1rem;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 1rem;
+  }
+
+  .sidebar-logo h1 {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: var(--accent);
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+  }
+
+  .sidebar-logo span {
+    font-size: 0.7rem;
+    color: var(--muted);
+    font-family: 'Space Mono', monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  .nav-section-title {
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--muted);
+    padding: 0.8rem 1.5rem 0.3rem;
+    font-weight: 700;
+  }
+
+  .nav-link {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.5rem 1.5rem;
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 600;
+    border-left: 2px solid transparent;
+    transition: all 0.2s;
+    cursor: pointer;
+  }
+
+  .nav-link:hover, .nav-link.active {
+    color: var(--text);
+    border-left-color: var(--accent);
+    background: rgba(108, 99, 255, 0.08);
+  }
+
+  .nav-link .dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--border);
+    flex-shrink: 0;
+    transition: background 0.2s;
+  }
+
+  .nav-link:hover .dot, .nav-link.active .dot {
+    background: var(--accent);
+  }
+
+  /* ===== MAIN CONTENT ===== */
+  .main {
+    margin-left: 260px;
+    min-height: 100vh;
+  }
+
+  /* ===== HERO ===== */
+  .hero {
+    position: relative;
+    padding: 5rem 4rem 4rem;
+    border-bottom: 1px solid var(--border);
+    overflow: hidden;
+    background: radial-gradient(ellipse at 20% 50%, rgba(108,99,255,0.12) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 20%, rgba(67,233,123,0.06) 0%, transparent 50%);
+  }
+
+  .hero-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(108,99,255,0.15);
+    border: 1px solid rgba(108,99,255,0.3);
+    padding: 0.3rem 0.8rem;
+    border-radius: 100px;
+    font-size: 0.75rem;
+    font-family: 'Space Mono', monospace;
+    color: var(--accent);
+    margin-bottom: 1.5rem;
+  }
+
+  .hero h1 {
+    font-size: clamp(2.5rem, 5vw, 4rem);
+    font-weight: 800;
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+    margin-bottom: 1rem;
+  }
+
+  .hero h1 span { color: var(--accent); }
+
+  .hero p {
+    font-size: 1.1rem;
+    color: var(--muted);
+    max-width: 600px;
+    margin-bottom: 2rem;
+    font-weight: 400;
+  }
+
+  .hero-badges {
+    display: flex;
+    gap: 0.8rem;
+    flex-wrap: wrap;
+  }
+
+  .badge {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.4rem 0.9rem;
+    border-radius: 6px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    font-family: 'Space Mono', monospace;
+  }
+
+  .badge-py { background: rgba(53,114,165,0.2); border: 1px solid rgba(53,114,165,0.4); color: #79b8ff; }
+  .badge-drf { background: rgba(255,101,132,0.15); border: 1px solid rgba(255,101,132,0.3); color: #ff6584; }
+  .badge-js { background: rgba(241,224,90,0.15); border: 1px solid rgba(241,224,90,0.3); color: #f1e05a; }
+
+  .hero-grid {
+    position: absolute;
+    right: 4rem; top: 50%;
+    transform: translateY(-50%);
+    opacity: 0.07;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.6rem;
+    color: var(--accent);
+    line-height: 1.6;
+    white-space: pre;
+    pointer-events: none;
+  }
+
+  /* ===== SECTIONS ===== */
+  .content {
+    padding: 0;
+  }
+
+  .section {
+    padding: 3.5rem 4rem;
+    border-bottom: 1px solid var(--border);
+    animation: fadeInUp 0.5s ease both;
+  }
+
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .section-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 1.2rem;
+    margin-bottom: 2rem;
+  }
+
+  .section-num {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--accent);
+    background: rgba(108,99,255,0.12);
+    border: 1px solid rgba(108,99,255,0.25);
+    padding: 0.3rem 0.6rem;
+    border-radius: 4px;
+    margin-top: 0.3rem;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .section-title { font-size: 1.8rem; font-weight: 800; letter-spacing: -0.02em; }
+  .section-subtitle { font-size: 0.95rem; color: var(--muted); margin-top: 0.3rem; font-weight: 400; }
+
+  h3 {
+    font-size: 1.15rem;
+    font-weight: 700;
+    margin: 2rem 0 0.8rem;
+    color: var(--text);
+  }
+
+  h4 {
+    font-size: 0.95rem;
+    font-weight: 700;
+    margin: 1.5rem 0 0.5rem;
+    color: var(--accent2);
+    font-family: 'Space Mono', monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-size: 0.75rem;
+  }
+
+  p { color: #b0b0cc; font-size: 0.95rem; margin-bottom: 0.8rem; }
+
+  /* ===== CODE BLOCKS ===== */
+  .code-block {
+    position: relative;
+    margin: 1.2rem 0;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+
+  .code-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.6rem 1rem;
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .code-lang {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  .lang-python { color: #79b8ff; }
+  .lang-bash { color: var(--accent3); }
+  .lang-javascript { color: #f1e05a; }
+  .lang-json { color: #fd971f; }
+
+  .copy-btn {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    padding: 0.2rem 0.6rem;
+    border-radius: 4px;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .copy-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .copy-btn.copied { border-color: var(--accent3); color: var(--accent3); }
+
+  pre {
+    background: var(--code-bg);
+    padding: 1.2rem 1.4rem;
+    overflow-x: auto;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.82rem;
+    line-height: 1.8;
+  }
+
+  code { font-family: 'Space Mono', monospace; }
+
+  /* Syntax highlighting */
+  .kw { color: #ff79c6; }
+  .fn { color: #50fa7b; }
+  .st { color: #f1fa8c; }
+  .cm { color: #6272a4; font-style: italic; }
+  .nm { color: #bd93f9; }
+  .op { color: #ff79c6; }
+  .cl { color: #8be9fd; }
+  .dc { color: #ffb86c; }
+  .at { color: #50fa7b; }
+
+  /* ===== INFO BOXES ===== */
+  .info-box {
+    padding: 1rem 1.2rem;
+    border-radius: 8px;
+    margin: 1.2rem 0;
+    font-size: 0.88rem;
+    border-left: 3px solid;
+    display: flex;
+    gap: 0.8rem;
+  }
+
+  .info-box .icon { font-size: 1rem; flex-shrink: 0; margin-top: 0.05rem; }
+
+  .info-tip { background: rgba(108,99,255,0.1); border-color: var(--accent); }
+  .info-warn { background: rgba(247,151,30,0.1); border-color: var(--accent4); }
+  .info-ok { background: rgba(67,233,123,0.1); border-color: var(--accent3); }
+  .info-err { background: rgba(255,101,132,0.1); border-color: var(--accent2); }
+
+  /* ===== CONCEPT CARDS ===== */
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1rem;
+    margin: 1.5rem 0;
+  }
+
+  .card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.2rem;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+
+  .card:hover { border-color: var(--accent); transform: translateY(-2px); }
+
+  .card-icon { font-size: 1.5rem; margin-bottom: 0.6rem; }
+  .card-title { font-size: 0.9rem; font-weight: 700; margin-bottom: 0.4rem; color: var(--text); }
+  .card-desc { font-size: 0.8rem; color: var(--muted); line-height: 1.5; }
+
+  /* ===== STEPS ===== */
+  .steps { display: flex; flex-direction: column; gap: 0; margin: 1.5rem 0; }
+
+  .step {
+    display: flex;
+    gap: 1.2rem;
+    padding: 1.2rem 0;
+    border-bottom: 1px solid rgba(42,42,64,0.5);
+  }
+
+  .step:last-child { border-bottom: none; }
+
+  .step-num {
+    width: 28px; height: 28px;
+    background: var(--accent);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.75rem; font-weight: 800;
+    flex-shrink: 0;
+    margin-top: 0.1rem;
+    font-family: 'Space Mono', monospace;
+  }
+
+  .step-content h4 { margin: 0 0 0.3rem; color: var(--text); font-size: 0.9rem; font-weight: 700; text-transform: none; letter-spacing: 0; font-family: 'Syne', sans-serif; }
+  .step-content p { margin: 0; font-size: 0.85rem; }
+
+  /* ===== TABS ===== */
+  .tab-container { margin: 1.5rem 0; }
+
+  .tab-buttons {
+    display: flex;
+    gap: 0;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 0;
+    overflow-x: auto;
+  }
+
+  .tab-btn {
+    padding: 0.6rem 1.2rem;
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    color: var(--muted);
+    cursor: pointer;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    transition: all 0.2s;
+    white-space: nowrap;
+    margin-bottom: -1px;
+  }
+
+  .tab-btn:hover { color: var(--text); }
+  .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* ===== HTTP METHODS ===== */
+  .method {
+    display: inline-block;
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.7rem;
+    font-weight: 700;
+    margin-right: 0.4rem;
+  }
+
+  .get { background: rgba(67,233,123,0.2); color: #43e97b; }
+  .post { background: rgba(108,99,255,0.2); color: #6c63ff; }
+  .put { background: rgba(247,151,30,0.2); color: #f7971e; }
+  .delete { background: rgba(255,101,132,0.2); color: #ff6584; }
+  .patch { background: rgba(241,224,90,0.15); color: #f1e05a; }
+
+  /* ===== ENDPOINT TABLE ===== */
+  .endpoint-table { width: 100%; border-collapse: collapse; margin: 1.2rem 0; font-size: 0.85rem; }
+  .endpoint-table th { text-align: left; padding: 0.7rem 1rem; background: var(--surface2); border-bottom: 2px solid var(--border); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-family: 'Space Mono', monospace; }
+  .endpoint-table td { padding: 0.7rem 1rem; border-bottom: 1px solid rgba(42,42,64,0.5); vertical-align: middle; }
+  .endpoint-table tr:hover td { background: rgba(108,99,255,0.04); }
+  .endpoint-url { font-family: 'Space Mono', monospace; font-size: 0.8rem; color: var(--text); }
+  .endpoint-desc { color: var(--muted); }
+
+  /* ===== INLINE CODE ===== */
+  .ic {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    padding: 0.1rem 0.4rem;
+    border-radius: 4px;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.82em;
+    color: #79b8ff;
+  }
+
+  /* ===== MOBILE NAV ===== */
+  .mobile-nav-toggle {
+    display: none;
+    position: fixed;
+    bottom: 1.5rem; right: 1.5rem;
+    width: 48px; height: 48px;
+    background: var(--accent);
+    border: none;
+    border-radius: 50%;
+    color: white;
+    font-size: 1.2rem;
+    cursor: pointer;
+    z-index: 200;
+    box-shadow: 0 4px 20px rgba(108,99,255,0.4);
+  }
+
+  /* ===== PROGRESS BAR ===== */
+  .progress-bar {
+    position: fixed;
+    top: 0; left: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    z-index: 1000;
+    transition: width 0.1s;
+    width: 0%;
+  }
+
+  /* ===== LIVE DEMO ===== */
+  .demo-box {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    margin: 1.5rem 0;
+  }
+
+  .demo-header {
+    padding: 0.8rem 1.2rem;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--muted);
+  }
+
+  .demo-dot { width: 8px; height: 8px; border-radius: 50%; }
+  .demo-dot-r { background: #ff5f57; }
+  .demo-dot-y { background: #febc2e; }
+  .demo-dot-g { background: #28c840; }
+
+  .demo-body { padding: 1.2rem; }
+
+  .demo-input {
+    width: 100%;
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 0.7rem 1rem;
+    color: var(--text);
+    font-family: 'Space Mono', monospace;
+    font-size: 0.82rem;
+    margin-bottom: 0.8rem;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .demo-input:focus { border-color: var(--accent); }
+
+  .demo-btn {
+    padding: 0.6rem 1.4rem;
+    background: var(--accent);
+    border: none;
+    border-radius: 6px;
+    color: white;
+    font-family: 'Syne', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-right: 0.5rem;
+  }
+
+  .demo-btn:hover { background: #5a52e8; transform: translateY(-1px); }
+  .demo-btn-danger { background: var(--accent2); }
+  .demo-btn-danger:hover { background: #e0506e; }
+
+  .demo-output {
+    margin-top: 1rem;
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 0.8rem 1rem;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.78rem;
+    min-height: 60px;
+    color: var(--accent3);
+    white-space: pre-wrap;
+    word-break: break-all;
+  }
+
+  /* ===== RESPONSIVE ===== */
+  @media (max-width: 900px) {
+    .sidebar { transform: translateX(-100%); }
+    .sidebar.open { transform: translateX(0); }
+    .main { margin-left: 0; }
+    .section, .hero { padding: 2.5rem 1.5rem; }
+    .hero-grid { display: none; }
+    .mobile-nav-toggle { display: flex; align-items: center; justify-content: center; }
+  }
+
+  /* ===== DIVIDER ===== */
+  .divider { height: 1px; background: var(--border); margin: 1.5rem 0; }
+
+  /* ===== BACK TO TOP ===== */
+  .back-top {
+    display: none;
+    position: fixed;
+    bottom: 1.5rem; right: 5rem;
+    padding: 0.5rem 1rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--muted);
+    font-size: 0.75rem;
+    font-family: 'Space Mono', monospace;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.2s;
+  }
+  .back-top:hover { color: var(--text); border-color: var(--accent); }
+  .back-top.visible { display: block; }
+</style>
+</head>
+<body>
+
+<div class="progress-bar" id="progressBar"></div>
+
+<!-- SIDEBAR -->
+<nav class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <h1>Django REST API</h1>
+    <span>Tutorial Completo</span>
+  </div>
+
+  <div class="nav-section-title">Introdução</div>
+  <a class="nav-link active" onclick="scrollTo('intro')"><span class="dot"></span>O que é uma API?</a>
+  <a class="nav-link" onclick="scrollTo('conceitos')"><span class="dot"></span>Conceitos HTTP</a>
+
+  <div class="nav-section-title">Configuração</div>
+  <a class="nav-link" onclick="scrollTo('instalacao')"><span class="dot"></span>Instalação</a>
+  <a class="nav-link" onclick="scrollTo('projeto')"><span class="dot"></span>Criando o Projeto</a>
+
+  <div class="nav-section-title">Django + DRF</div>
+  <a class="nav-link" onclick="scrollTo('model')"><span class="dot"></span>Models</a>
+  <a class="nav-link" onclick="scrollTo('serializer')"><span class="dot"></span>Serializers</a>
+  <a class="nav-link" onclick="scrollTo('views')"><span class="dot"></span>Views & ViewSets</a>
+  <a class="nav-link" onclick="scrollTo('urls')"><span class="dot"></span>URLs & Routers</a>
+  <a class="nav-link" onclick="scrollTo('auth')"><span class="dot"></span>Autenticação</a>
+  <a class="nav-link" onclick="scrollTo('permissions')"><span class="dot"></span>Permissões</a>
+
+  <div class="nav-section-title">JavaScript</div>
+  <a class="nav-link" onclick="scrollTo('fetch')"><span class="dot"></span>Fetch API</a>
+  <a class="nav-link" onclick="scrollTo('axios')"><span class="dot"></span>Axios</a>
+  <a class="nav-link" onclick="scrollTo('crud-js')"><span class="dot"></span>CRUD Completo</a>
+
+  <div class="nav-section-title">Extra</div>
+  <a class="nav-link" onclick="scrollTo('cors')"><span class="dot"></span>CORS</a>
+  <a class="nav-link" onclick="scrollTo('filtros')"><span class="dot"></span>Filtros & Paginação</a>
+  <a class="nav-link" onclick="scrollTo('demo')"><span class="dot"></span>Demo Interativo</a>
+</nav>
+
+<!-- MAIN -->
+<main class="main">
+
+  <!-- HERO -->
+  <div class="hero" id="hero-section">
+    <div class="hero-tag">
+      <span>⚡</span> Guia prático do zero ao deploy
+    </div>
+    <h1>Construa uma <span>REST API</span><br>com Django</h1>
+    <p>Aprenda a criar APIs profissionais com Django REST Framework e consumi-las com JavaScript. Do ambiente de desenvolvimento ao frontend completo.</p>
+    <div class="hero-badges">
+      <span class="badge badge-py">🐍 Python 3.10+</span>
+      <span class="badge badge-drf">🔴 Django 4.x</span>
+      <span class="badge badge-js">⚡ JavaScript ES6+</span>
+    </div>
+    <div class="hero-grid">GET    /api/produtos/
+POST   /api/produtos/
+GET    /api/produtos/{id}/
+PUT    /api/produtos/{id}/
+PATCH  /api/produtos/{id}/
+DELETE /api/produtos/{id}/
+
+Status: 200 OK
+Status: 201 Created
+Status: 400 Bad Request
+Status: 401 Unauthorized
+Status: 404 Not Found</div>
+  </div>
+
+  <div class="content">
+
+    <!-- 1. O QUE É UMA API -->
+    <section class="section" id="intro">
+      <div class="section-header">
+        <span class="section-num">01</span>
+        <div>
+          <h2 class="section-title">O que é uma API REST?</h2>
+          <p class="section-subtitle">Entendendo o conceito antes de codar</p>
+        </div>
+      </div>
+
+      <p>API significa <strong>Application Programming Interface</strong>. Pense como um garçom num restaurante: você (o cliente / frontend) faz um pedido → o garçom (a API) leva para a cozinha (o backend / banco de dados) → e traz o resultado de volta.</p>
+
+      <p>Uma <strong>REST API</strong> (Representational State Transfer) é um estilo de arquitetura onde o servidor expõe recursos (dados) via URLs, e o cliente manipula esses recursos usando os verbos HTTP.</p>
+
+      <div class="cards-grid">
+        <div class="card">
+          <div class="card-icon">🌐</div>
+          <div class="card-title">Recurso (Resource)</div>
+          <div class="card-desc">Qualquer dado: um produto, usuário, artigo. Cada recurso tem uma URL única. Ex: <code>/api/produtos/1/</code></div>
+        </div>
+        <div class="card">
+          <div class="card-icon">📨</div>
+          <div class="card-title">Request / Response</div>
+          <div class="card-desc">O cliente envia uma requisição (request) e recebe uma resposta (response) em formato JSON.</div>
+        </div>
+        <div class="card">
+          <div class="card-icon">🔑</div>
+          <div class="card-title">Stateless</div>
+          <div class="card-desc">Cada requisição é independente. O servidor não lembra de requisições anteriores — você precisa enviar tudo necessário em cada chamada.</div>
+        </div>
+        <div class="card">
+          <div class="card-icon">📦</div>
+          <div class="card-title">JSON</div>
+          <div class="card-desc">O formato padrão para troca de dados. Leve, legível por humanos e perfeito para JavaScript.</div>
+        </div>
+      </div>
+
+      <div class="info-box info-tip">
+        <span class="icon">💡</span>
+        <div><strong>Exemplo do dia a dia:</strong> Quando você abre o Instagram no celular, o app faz chamadas para a API do Instagram pedindo as fotos, curtidas e comentários. O Django REST Framework seria o "servidor por trás" que responde a essas chamadas.</div>
+      </div>
+    </section>
+
+    <!-- 2. CONCEITOS HTTP -->
+    <section class="section" id="conceitos">
+      <div class="section-header">
+        <span class="section-num">02</span>
+        <div>
+          <h2 class="section-title">Verbos HTTP & Status Codes</h2>
+          <p class="section-subtitle">A linguagem de comunicação da web</p>
+        </div>
+      </div>
+
+      <h3>Verbos (Métodos HTTP)</h3>
+      <p>Cada ação que você faz com dados usa um verbo diferente:</p>
+
+      <table class="endpoint-table">
+        <thead>
+          <tr>
+            <th>Método</th>
+            <th>Ação</th>
+            <th>Exemplo</th>
+            <th>Analogia</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="method get">GET</span></td>
+            <td class="endpoint-desc">Ler / buscar dados</td>
+            <td class="endpoint-url">GET /api/produtos/</td>
+            <td class="endpoint-desc">Olhar o cardápio</td>
+          </tr>
+          <tr>
+            <td><span class="method post">POST</span></td>
+            <td class="endpoint-desc">Criar novo dado</td>
+            <td class="endpoint-url">POST /api/produtos/</td>
+            <td class="endpoint-desc">Fazer um pedido</td>
+          </tr>
+          <tr>
+            <td><span class="method put">PUT</span></td>
+            <td class="endpoint-desc">Atualizar tudo</td>
+            <td class="endpoint-url">PUT /api/produtos/1/</td>
+            <td class="endpoint-desc">Trocar o prato inteiro</td>
+          </tr>
+          <tr>
+            <td><span class="method patch">PATCH</span></td>
+            <td class="endpoint-desc">Atualizar parcialmente</td>
+            <td class="endpoint-url">PATCH /api/produtos/1/</td>
+            <td class="endpoint-desc">Tirar só a cebola</td>
+          </tr>
+          <tr>
+            <td><span class="method delete">DELETE</span></td>
+            <td class="endpoint-desc">Deletar dado</td>
+            <td class="endpoint-url">DELETE /api/produtos/1/</td>
+            <td class="endpoint-desc">Cancelar o pedido</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>Códigos de Status</h3>
+      <div class="cards-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
+        <div class="card"><div class="card-icon">✅</div><div class="card-title" style="color:#43e97b">2xx — Sucesso</div><div class="card-desc"><strong>200</strong> OK · <strong>201</strong> Criado · <strong>204</strong> Sem conteúdo (delete)</div></div>
+        <div class="card"><div class="card-icon">↩️</div><div class="card-title" style="color:#6c63ff">3xx — Redirecionamento</div><div class="card-desc"><strong>301</strong> Movido permanentemente · <strong>304</strong> Não modificado</div></div>
+        <div class="card"><div class="card-icon">❌</div><div class="card-title" style="color:#f7971e">4xx — Erro do cliente</div><div class="card-desc"><strong>400</strong> Dado inválido · <strong>401</strong> Não autenticado · <strong>403</strong> Sem permissão · <strong>404</strong> Não encontrado</div></div>
+        <div class="card"><div class="card-icon">💥</div><div class="card-title" style="color:#ff6584">5xx — Erro do servidor</div><div class="card-desc"><strong>500</strong> Erro interno · <strong>503</strong> Serviço indisponível</div></div>
+      </div>
+    </section>
+
+    <!-- 3. INSTALAÇÃO -->
+    <section class="section" id="instalacao">
+      <div class="section-header">
+        <span class="section-num">03</span>
+        <div>
+          <h2 class="section-title">Instalação do Ambiente</h2>
+          <p class="section-subtitle">Python, Django e Django REST Framework</p>
+        </div>
+      </div>
+
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-content">
+            <h4>Crie um ambiente virtual</h4>
+            <p>Ambiente virtual isola as dependências do projeto. Boa prática obrigatória!</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang lang-bash">bash</span>
+          <button class="copy-btn" onclick="copyCode(this)">copiar</button>
+        </div>
+        <pre><code><span class="cm"># Cria a pasta do projeto</span>
+mkdir minha_api && cd minha_api
+
+<span class="cm"># Cria o ambiente virtual</span>
+python -m venv venv
+
+<span class="cm"># Ativa o ambiente (Linux/Mac)</span>
+source venv/bin/activate
+
+<span class="cm"># Ativa o ambiente (Windows)</span>
+venv\Scripts\activate
+
+<span class="cm"># Instala o Django e o DRF</span>
+pip install django djangorestframework
+
+<span class="cm"># Outras dependências úteis</span>
+pip install django-cors-headers django-filter pillow</code></pre>
+      </div>
+
+      <div class="info-box info-tip">
+        <span class="icon">💡</span>
+        <div>Sempre que ver o terminal com <span class="ic">(venv)</span> na frente, significa que o ambiente está ativado. Nunca instale pacotes Python sem ativar o ambiente virtual!</div>
+      </div>
+
+      <h3>Salvar dependências</h3>
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang lang-bash">bash</span>
+          <button class="copy-btn" onclick="copyCode(this)">copiar</button>
+        </div>
+        <pre><code><span class="cm"># Salva as dependências instaladas num arquivo</span>
+pip freeze > requirements.txt
+
+<span class="cm"># Outro desenvolvedor instala tudo de uma vez:</span>
+pip install -r requirements.txt</code></pre>
+      </div>
+    </section>
+
+    <!-- 4. CRIANDO O PROJETO -->
+    <section class="section" id="projeto">
+      <div class="section-header">
+        <span class="section-num">04</span>
+        <div>
+          <h2 class="section-title">Estrutura do Projeto</h2>
+          <p class="section-subtitle">Criando o projeto e o app Django</p>
+        </div>
+      </div>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang lang-bash">bash</span>
+          <button class="copy-btn" onclick="copyCode(this)">copiar</button>
+        </div>
+        <pre><code><span class="cm"># Cria o projeto Django</span>
+django-admin startproject core .
+
+<span class="cm"># Cria um app chamado "produtos"</span>
+python manage.py startapp produtos</code></pre>
+      </div>
+
+      <p>A estrutura ficará assim:</p>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang lang-bash">estrutura</span>
+        </div>
+        <pre><code>minha_api/
+├── core/                  <span class="cm">← configurações do projeto</span>
+│   ├── settings.py        <span class="cm">← configurações principais</span>
+│   ├── urls.py            <span class="cm">← URLs raiz</span>
+│   └── wsgi.py
+├── produtos/              <span class="cm">← nosso app</span>
+│   ├── models.py          <span class="cm">← modelos (tabelas do BD)</span>
+│   ├── serializers.py     <span class="cm">← conversão Python ↔ JSON</span>
+│   ├── views.py           <span class="cm">← lógica da API</span>
+│   └── urls.py            <span class="cm">← URLs do app</span>
+├── manage.py
+└── requirements.txt</code></pre>
+      </div>
+
+      <h3>Configurar o settings.py</h3>
+      <p>Adicione o app e o DRF na lista de apps instalados:</p>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang lang-python">python — core/settings.py</span>
+          <button class="copy-btn" onclick="copyCode(this)">copiar</button>
+        </div>
+        <pre><code>INSTALLED_APPS = [
+    <span class="st">'django.contrib.admin'</span>,
+    <span class="st">'django.contrib.auth'</span>,
+    <span class="st">'django.contrib.contenttypes'</span>,
+    <span class="st">'django.contrib.sessions'</span>,
+    <span class="st">'django.contrib.messages'</span>,
+    <span class="st">'django.contrib.staticfiles'</span>,
+
+    <span class="cm"># Adicionar esses:</span>
+    <span class="st">'rest_framework'</span>,        <span class="cm"># Django REST Framework</span>
+    <span class="st">'corsheaders'</span>,           <span class="cm"># Para permitir acesso do JS</span>
+    <span class="st">'django_filters'</span>,        <span class="cm"># Para filtros</span>
+    <span class="st">'produtos'</span>,              <span class="cm"># Nosso app</span>
+]
+
+<span class="cm"># Configurações globais do DRF</span>
+REST_FRAMEWORK = {
+    <span class="st">'DEFAULT_AUTHENTICATION_CLASSES'</span>: [
+        <span class="st">'rest_framework.authentication.SessionAuthentication'</span>,
+        <span class="st">'rest_framework.authentication.BasicAuthentication'</span>,
+    ],
+    <span class="st">'DEFAULT_PERMISSION_CLASSES'</span>: [
+        <span class="st">'rest_framework.permissions.IsAuthenticatedOrReadOnly'</span>,
+    ],
+    <span class="st">'DEFAULT_PAGINATION_CLASS'</span>: <span class="st">'rest_framework.pagination.PageNumberPagination'</span>,
+    <span class="st">'PAGE_SIZE'</span>: <span class="nm">10</span>,
+}</code></pre>
+      </div>
+    </section>
+
+    <!-- 5. MODELS -->
+    <section class="section" id="model">
+      <div class="section-header">
+        <span class="section-num">05</span>
+        <div>
+          <h2 class="section-title">Models — Os Dados</h2>
+          <p class="section-subtitle">Definindo as tabelas do banco de dados</p>
+        </div>
+      </div>
+
+      <p>O <strong>Model</strong> define a estrutura do seu dado. Cada classe Python vira uma tabela no banco de dados. Cada atributo vira uma coluna.</p>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang lang-python">python — produtos/models.py</span>
+          <button class="copy-btn" onclick="copyCode(this)">copiar</button>
+        </div>
+        <pre><code><span class="kw">from</span> django.db <span class="kw">import</span> models
+<span class="kw">from</span> django.contrib.auth.models <span class="kw">import</span> User
+
+<span class="kw">class</span> <span class="cl">Categoria</span>(models.Model):
+    nome = models.<span class="fn">CharField</span>(max_length=<span class="nm">100</span>)
+    descricao = models.<span class="fn">TextField</span>(blank=<span class="kw">True</span>)
+
+    <span class="kw">def</span> <span class="fn">__str__</span>(<span class="dc">self</span>):
+        <span class="kw">return</span> <span class="dc">self</span>.nome
+
+    <span class="kw">class</span> <span class="cl">Meta</span>:
+        verbose_name_plural = <span class="st">'Categorias'</span>
+
+
+<span class="kw">class</span> <span class="cl">Produto</span>(models.Model):
+    <span class="cm"># Choices para o campo status</span>
+    STATUS_CHOICES = [
+        (<span class="st">'ativo'</span>, <span class="st">'Ativo'</span>),
+        (<span class="st">'inativo'</span>, <span class="st">'Inativo'</span>),
+        (<span class="st">'esgotado'</span>, <span class="st">'Esgotado'</span>),
+    ]
+
+    nome = models.<span class="fn">CharField</span>(max_length=<span class="nm">200</span>)
+    descricao = models.<span class="fn">TextField</span>(blank=<span class="kw">True</span>)
+    preco = models.<span class="fn">DecimalField</span>(max_digits=<span class="nm">10</span>, decimal_places=<span class="nm">2</span>)
+    estoque = models.<span class="fn">IntegerField</span>(default=<span class="nm">0</span>)
+    status = models.<span class="fn">CharField</span>(max_length=<span class="nm">10</span>, choices=STATUS_CHOICES, default=<span class="st">'ativo'</span>)
+
+    <span class="cm"># ForeignKey = relação de 1 categoria → muitos produtos</span>
+    categoria = models.<span class="fn">ForeignKey</span>(
+        Categoria,
+        on_delete=models.CASCADE,   <span class="cm"># se deletar categoria, deleta produtos</span>
+        related_name=<span class="st">'produtos'</span>
+    )
+
+    <span class="cm"># O criador do produto (usuário logado)</span>
+    criado_por = models.<span class="fn">ForeignKey</span>(
+        User,
+        on_delete=models.SET_NULL,
+        null=<span class="kw">True</span>, blank=<span class="kw">True</span>
+    )
+
+    criado_em = models.<span class="fn">DateTimeField</span>(auto_now_add=<span class="kw">True</span>)  <span class="cm"># preenche automaticamente</span>
+    atualizado_em = models.<span class="fn">DateTimeField</span>(auto_now=<span class="kw">True</span>)   <span class="cm"># atualiza automaticamente</span>
+
+    <span class="kw">def</span> <span class="fn">__str__</span>(<span class="dc">self</span>):
+        <span class="kw">return</span> <span class="dc">self</span>.nome
+
+    <span class="kw">class</span> <span class="cl">Meta</span>:
+        ordering = [<span class="st">'-criado_em'</span>]  <span class="cm"># Mais recentes primeiro</span></code></pre>
+      </div>
+
+      <h3>Criando as tabelas no banco</h3>
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang lang-bash">bash</span>
+          <button class="copy-btn" onclick="copyCode(this)">copiar</button>
+        </div>
+        <pre><code><span class="cm"># Cria os arquivos de migração (detecta mudanças no model)</span>
+python manage.py makemigrations
+
+<span class="cm"># Aplica as migrações no banco de dados</span>
+python manage.py migrate</code></pre>
+      </div>
+
+      <div class="info-box info-warn">
+        <span class="icon">⚠️</span>
+        <div>Sempre que você alterar um Model (adicionar/remover campo), rode <span class="ic">makemigrations</span> e depois <span class="ic">migrate</span> novamente.</div>
+      </div>
+    </section>
+
+    <!-- 6. SERIALIZERS -->
+    <section class="section" id="serializer">
+      <div class="section-header">
+        <span class="section-num">06</span>
+        <div>
+          <h2 class="section-title">Serializers — A Tradução</h2>
+          <p class="section-subtitle">Convertendo Python ↔ JSON</p>
+        </div>
+      </div>
+
+      <p>O <strong>Serializer</strong> é como um "tradutor". Ele converte objetos Python (do banco de dados) em JSON para enviar ao cliente — e também valida e converte JSON de volta em objetos Python quando recebe dados.</p>
+
+      <div class="info-box info-tip">
+        <span class="icon">💡</span>
+        <div>Imagine que você tem um objeto <span class="ic">Produto</span> Python. O serializer "serializa" ele para <span class="ic">{"nome": "Camiseta", "preco": "49.90", ...}</span>. E quando o JS envia um JSON, o serializer valida se está tudo certo antes de salvar.</div>
+      </div>
+
+      <div class="tab-container">
+        <div class="tab-buttons">
+          <button class="tab-btn active" onclick="switchTab(this, 'serial-basic')">Básico</button>
+          <button class="tab-btn" onclick="switchTab(this, 'serial-model')">ModelSerializer</button>
+          <button class="tab-btn" onclick="switchTab(this, 'serial-nested')">Aninhado</button>
+          <button class="tab-btn" onclick="switchTab(this, 'serial-custom')">Campos Customizados</button>
+        </div>
+
+        <div class="tab-panel active" id="serial-basic">
+          <div class="code-block">
+            <div class="code-header">
+              <span class="code-lang lang-python">python — Serializer manual</span>
+              <button class="copy-btn" onclick="copyCode(this)">copiar</button>
+            </div>
+            <pre><code><span class="kw">from</span> rest_framework <span class="kw">import</span> serializers
+
+<span class="cm"># Serializer feito "na mão" — raramente usado</span>
+<span class="kw">class</span> <span class="cl">ProdutoSerializer</span>(serializers.Serializer):
+    id = serializers.<span class="fn">IntegerField</span>(read_only=<span class="kw">True</span>)
+    nome = serializers.<span class="fn">CharField</span>(max_length=<span class="nm">200</span>)
+    preco = serializers.<span class="fn">DecimalField</span>(max_digits=<span class="nm">10</span>, decimal_places=<span class="nm">2</span>)
+
+    <span class="kw">def</span> <span class="fn">create</span>(<span class="dc">self</span>, validated_data):
+        <span class="kw">return</span> Produto.objects.<span class="fn">create</span>(**validated_data)
+
+    <span class="kw">def</span> <span class="fn">update</span>(<span class="dc">self</span>, instance, validated_data):
+        instance.nome = validated_data.<span class="fn">get</span>(<span class="st">'nome'</span>, instance.nome)
+        instance.preco = validated_data.<span class="fn">get</span>(<span class="st">'preco'</span>, instance.preco)
+        instance.<span class="fn">save</span>()
+        <span class="kw">return</span> instance</code></pre>
+          </div>
+        </div>
+
+        <div class="tab-panel" id="serial-model">
+          <div class="code-block">
+            <div class="code-header">
+              <span class="code-lang lang-python">python — ModelSerializer (recomendado)</span>
+              <button class="copy-btn" onclick="copyCode(this)">copiar</button>
+            </div>
+            <pre><code><span class="kw">from</span> rest_framework <span class="kw">import</span> serializers
+<span class="kw">from</span> .models <span class="kw">import</span> Produto, Categoria
+
+<span class="kw">class</span> <span class="cl">CategoriaSerializer</span>(serializers.ModelSerializer):
+    <span class="kw">class</span> <span class="cl">Meta</span>:
+        model = Categoria
+        fields = [<span class="st">'id'</span>, <span class="st">'nome'</span>, <span class="st">'descricao'</span>]
+
+<span class="kw">class</span> <span class="cl">ProdutoSerializer</span>(serializers.ModelSerializer):
+    <span class="kw">class</span> <span class="cl">Meta</span>:
+        model = Produto
+
+        <span class="cm"># '__all__' inclui todos os campos</span>
+        fields = <span class="st">'__all__'</span>
+
+        <span class="cm"># OU liste explicitamente (melhor prática):</span>
+        <span class="cm"># fields = ['id', 'nome', 'descricao', 'preco', 'estoque', 'status', 'categoria']</span>
+
+        <span class="cm"># Campos somente leitura</span>
+        read_only_fields = [<span class="st">'id'</span>, <span class="st">'criado_em'</span>, <span class="st">'atualizado_em'</span>]</code></pre>
+          </div>
+        </div>
+
+        <div class="tab-panel" id="serial-nested">
+          <div class="code-block">
+            <div class="code-header">
+              <span class="code-lang lang-python">python — Serializer Aninhado</span>
+              <button class="copy-btn" onclick="copyCode(this)">copiar</button>
+            </div>
+            <pre><code><span class="cm"># Ao invés de retornar só o ID da categoria,</span>
+<span class="cm"># retorna o objeto completo da categoria</span>
+
+<span class="kw">class</span> <span class="cl">ProdutoDetalheSerializer</span>(serializers.ModelSerializer):
+    <span class="cm"># Inclui o objeto Categoria completo (não só o ID)</span>
+    categoria = CategoriaSerializer(read_only=<span class="kw">True</span>)
+
+    <span class="cm"># Campo extra calculado</span>
+    em_estoque = serializers.<span class="fn">SerializerMethodField</span>()
+
+    <span class="kw">def</span> <span class="fn">get_em_estoque</span>(<span class="dc">self</span>, obj):
+        <span class="kw">return</span> obj.estoque > <span class="nm">0</span>
+
+    <span class="kw">class</span> <span class="cl">Meta</span>:
+        model = Produto
+        fields = [<span class="st">'id'</span>, <span class="st">'nome'</span>, <span class="st">'preco'</span>, <span class="st">'estoque'</span>,
+                  <span class="st">'categoria'</span>, <span class="st">'em_estoque'</span>, <span class="st">'criado_em'</span>]
+
+<span class="cm"># Resposta JSON:
+# {
+#   "id": 1,
+#   "nome": "Camiseta",
+#   "preco": "49.90",
+#   "estoque": 5,
+#   "em_estoque": true,
+#   "categoria": {"id": 1, "nome": "Roupas", "descricao": "..."},
+#   "criado_em": "2024-01-15T10:30:00Z"
+# }</span></code></pre>
+          </div>
+        </div>
+
+        <div class="tab-panel" id="serial-custom">
+          <div class="code-block">
+            <div class="code-header">
+              <span class="code-lang lang-python">python — Validações customizadas</span>
+              <button class="copy-btn" onclick="copyCode(this)">copiar</button>
+            </div>
+            <pre><code><span class="kw">class</span> <span class="cl">ProdutoSerializer</span>(serializers.ModelSerializer):
+
+    <span class="cm"># Validação de campo único: validate_<nome_campo></span>
+    <span class="kw">def</span> <span class="fn">validate_preco</span>(<span class="dc">self</span>, value):
+        <span class="kw">if</span> value <= <span class="nm">0</span>:
+            <span class="kw">raise</span> serializers.<span class="fn">ValidationError</span>(<span class="st">'Preço deve ser maior que zero'</span>)
+        <span class="kw">return</span> value
+
+    <span class="cm"># Validação entre múltiplos campos</span>
+    <span class="kw">def</span> <span class="fn">validate</span>(<span class="dc">self</span>, data):
+        <span class="kw">if</span> data[<span class="st">'estoque'</span>] > <span class="nm">0</span> <span class="kw">and</span> data[<span class="st">'status'</span>] == <span class="st">'esgotado'</span>:
+            <span class="kw">raise</span> serializers.<span class="fn">ValidationError</span>(
+                <span class="st">'Produto com estoque não pode ser esgotado'</span>
+            )
+        <span class="kw">return</span> data
+
+    <span class="kw">class</span> <span class="cl">Meta</span>:
+        model = Produto
+        fields = <span class="st">'__all__'</span></code></pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 7. VIEWS -->
+    <section class="section" id="views">
+      <div class="section-header">
+        <span class="section-num">07</span>
+        <div>
+          <h2 class="section-title">Views & ViewSets</h2>
+          <p class="section-subtitle">A lógica que responde às requisições</p>
+        </div>
+      </div>
+
+      <p>As <strong>Views</strong> são funções ou classes que recebem uma requisição HTTP e retornam uma resposta. O DRF oferece várias formas de criar views, da mais manual à mais automática.</p>
+
+      <div class="tab-container">
+        <div class="tab-buttons">
+          <button class="tab-btn active" onclick="switchTab(this, 'view-func')">APIView (Classe)</button>
+          <button class="tab-btn" onclick="switchTab(this, 'view-generic')">Generic Views</button>
+          <button class="tab-btn" onclick="switchTab(this, 'view-viewset')">ViewSets ⚡</button>
+        </div>
+
+        <div class="tab-panel active" id="view-func">
+          <p style="margin-top:1rem; font-size:0.88rem;">Mais verboso, mas dá total controle. Ideal para lógica complexa.</p>
+          <div class="code-block">
+            <div class="code-header">
+              <span class="code-lang lang-python">python — produtos/views.py</span>
+              <button class="copy-btn" onclick="copyCode(this)">copiar</button>
+            </div>
+            <pre><code><span class="kw">from</span> rest_framework.views <span class="kw">import</span> APIView
+<span class="kw">from</span> rest_framework.response <span class="kw">import</span> Response
+<span class="kw">from</span> rest_framework <span class="kw">import</span> status
+<span class="kw">from</span> .models <span class="kw">import</span> Produto
+<span class="kw">from</span> .serializers <span class="kw">import</span> ProdutoSerializer
+
+<span class="kw">class</span> <span class="cl">ProdutoListView</span>(APIView):
+    <span class="st">"""GET /api/produtos/  e  POST /api/produtos/"""</span>
+
+    <span class="kw">def</span> <span class="fn">get</span>(<span class="dc">self</span>, request):
+        produtos = Produto.objects.<span class="fn">all</span>()
+        serializer = <span class="fn">ProdutoSerializer</span>(produtos, many=<span class="kw">True</span>)
+        <span class="kw">return</span> <span class="fn">Response</span>(serializer.data)
+
+    <span class="kw">def</span> <span class="fn">post</span>(<span class="dc">self</span>, request):
+        serializer = <span class="fn">ProdutoSerializer</span>(data=request.data)
+        <span class="kw">if</span> serializer.<span class="fn">is_valid</span>():
+            serializer.<span class="fn">save</span>(criado_por=request.user)
+            <span class="kw">return</span> <span class="fn">Response</span>(serializer.data, status=status.HTTP_201_CREATED)
+        <span class="kw">return</span> <span class="fn">Response</span>(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+<span class="kw">class</span> <span class="cl">ProdutoDetailView</span>(APIView):
+    <span class="st">"""GET, PUT, DELETE /api/produtos/{id}/"""</span>
+
+    <span class="kw">def</span> <span class="fn">get_object</span>(<span class="dc">self</span>, pk):
+        <span class="kw">try</span>:
+            <span class="kw">return</span> Produto.objects.<span class="fn">get</span>(pk=pk)
+        <span class="kw">except</span> Produto.DoesNotExist:
+            <span class="kw">return</span> <span class="kw">None</span>
+
+    <span class="kw">def</span> <span class="fn">get</span>(<span class="dc">self</span>, request, pk):
+        produto = <span class="dc">self</span>.<span class="fn">get_object</span>(pk)
+        <span class="kw">if not</span> produto:
+            <span class="kw">return</span> <span class="fn">Response</span>(status=status.HTTP_404_NOT_FOUND)
+        serializer = <span class="fn">ProdutoSerializer</span>(produto)
+        <span class="kw">return</span> <span class="fn">Response</span>(serializer.data)
+
+    <span class="kw">def</span> <span class="fn">put</span>(<span class="dc">self</span>, request, pk):
+        produto = <span class="dc">self</span>.<span class="fn">get_object</span>(pk)
+        <span class="kw">if not</span> produto:
+            <span class="kw">return</span> <span class="fn">Response</span>(status=status.HTTP_404_NOT_FOUND)
+        serializer = <span class="fn">ProdutoSerializer</span>(produto, data=request.data)
+        <span class="kw">if</span> serializer.<span class="fn">is_valid</span>():
+            serializer.<span class="fn">save</span>()
+            <span class="kw">return</span> <span class="fn">Response</span>(serializer.data)
+        <span class="kw">return</span> <span class="fn">Response</span>(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    <span class="kw">def</span> <span class="fn">delete</span>(<span class="dc">self</span>, request, pk):
+        produto = <span class="dc">self</span>.<span class="fn">get_object</span>(pk)
+        <span class="kw">if not</span> produto:
+            <span class="kw">return</span> <span class="fn">Response</span>(status=status.HTTP_404_NOT_FOUND)
+        produto.<span class="fn">delete</span>()
+        <span class="kw">return</span> <span class="fn">Response</span>(status=status.HTTP_204_NO_CONTENT)</code></pre>
+          </div>
+        </div>
+
+        <div class="tab-panel" id="view-generic">
+          <p style="margin-top:1rem; font-size:0.88rem;">Mixins prontos que eliminam código repetitivo. Usa herança para combinar funcionalidades.</p>
+          <div class="code-block">
+            <div class="code-header">
+              <span class="code-lang lang-python">python — Generic Views</span>
+              <button class="copy-btn" onclick="copyCode(this)">copiar</button>
+            </div>
+            <pre><code><span class="kw">from</span> rest_framework <span class="kw">import</span> generics
+<span class="kw">from</span> rest_framework.permissions <span class="kw">import</span> IsAuthenticatedOrReadOnly
+<span class="kw">from</span> .models <span class="kw">import</span> Produto
+<span class="kw">from</span> .serializers <span class="kw">import</span> ProdutoSerializer
+
+<span class="cm"># Lista + Criação</span>
+<span class="kw">class</span> <span class="cl">ProdutoListCreateView</span>(generics.ListCreateAPIView):
+    queryset = Produto.objects.<span class="fn">all</span>()
+    serializer_class = ProdutoSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
+    <span class="cm"># Customizar o create para salvar o usuário</span>
+    <span class="kw">def</span> <span class="fn">perform_create</span>(<span class="dc">self</span>, serializer):
+        serializer.<span class="fn">save</span>(criado_por=<span class="dc">self</span>.request.user)
+
+
+<span class="cm"># Detalhe + Atualização + Deleção</span>
+<span class="kw">class</span> <span class="cl">ProdutoDetailView</span>(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Produto.objects.<span class="fn">all</span>()
+    serializer_class = ProdutoSerializer
+
+<span class="cm"># Classes disponíveis:
+# ListAPIView          → só GET lista
+# CreateAPIView        → só POST
+# RetrieveAPIView      → só GET detalhe
+# UpdateAPIView        → só PUT/PATCH
+# DestroyAPIView       → só DELETE
+# ListCreateAPIView    → GET lista + POST
+# RetrieveUpdateDestroyAPIView → GET detalhe + PUT/PATCH + DELETE</span></code></pre>
+          </div>
+        </div>
+
+        <div class="tab-panel" id="view-viewset">
+          <p style="margin-top:1rem; font-size:0.88rem;">⚡ <strong>A forma mais poderosa e recomendada.</strong> Um ViewSet reune todas as operações numa única classe, e o Router cria as URLs automaticamente.</p>
+          <div class="code-block">
+            <div class="code-header">
+              <span class="code-lang lang-python">python — ViewSet (recomendado)</span>
+              <button class="copy-btn" onclick="copyCode(this)">copiar</button>
+            </div>
+            <pre><code><span class="kw">from</span> rest_framework <span class="kw">import</span> viewsets, filters
+<span class="kw">from</span> rest_framework.decorators <span class="kw">import</span> action
+<span class="kw">from</span> rest_framework.response <span class="kw">import</span> Response
+<span class="kw">from</span> django_filters.rest_framework <span class="kw">import</span> DjangoFilterBackend
+<span class="kw">from</span> .models <span class="kw">import</span> Produto
+<span class="kw">from</span> .serializers <span class="kw">import</span> ProdutoSerializer, ProdutoDetalheSerializer
+
+<span class="kw">class</span> <span class="cl">ProdutoViewSet</span>(viewsets.ModelViewSet):
+    <span class="st">"""
+    ViewSet completo — gera automaticamente:
+    GET    /api/produtos/          → list()
+    POST   /api/produtos/          → create()
+    GET    /api/produtos/{id}/     → retrieve()
+    PUT    /api/produtos/{id}/     → update()
+    PATCH  /api/produtos/{id}/     → partial_update()
+    DELETE /api/produtos/{id}/     → destroy()
+    """</span>
+    queryset = Produto.objects.<span class="fn">all</span>()
+    serializer_class = ProdutoSerializer
+
+    <span class="cm"># Filtros, busca e ordenação</span>
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filterset_fields = [<span class="st">'status'</span>, <span class="st">'categoria'</span>]
+    search_fields = [<span class="st">'nome'</span>, <span class="st">'descricao'</span>]
+    ordering_fields = [<span class="st">'preco'</span>, <span class="st">'criado_em'</span>]
+
+    <span class="cm"># Usar serializer diferente para detalhe vs lista</span>
+    <span class="kw">def</span> <span class="fn">get_serializer_class</span>(<span class="dc">self</span>):
+        <span class="kw">if</span> <span class="dc">self</span>.action <span class="kw">in</span> [<span class="st">'retrieve'</span>]:
+            <span class="kw">return</span> ProdutoDetalheSerializer
+        <span class="kw">return</span> ProdutoSerializer
+
+    <span class="cm"># Action customizada: GET /api/produtos/em-destaque/</span>
+    <span class="at">@action</span>(detail=<span class="kw">False</span>, methods=[<span class="st">'get'</span>], url_path=<span class="st">'em-destaque'</span>)
+    <span class="kw">def</span> <span class="fn">em_destaque</span>(<span class="dc">self</span>, request):
+        destaque = <span class="dc">self</span>.queryset.<span class="fn">filter</span>(status=<span class="st">'ativo'</span>)[:<span class="nm">5</span>]
+        serializer = <span class="dc">self</span>.<span class="fn">get_serializer</span>(destaque, many=<span class="kw">True</span>)
+        <span class="kw">return</span> <span class="fn">Response</span>(serializer.data)</code></pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 8. URLS -->
+    <section class="section" id="urls">
+      <div class="section-header">
+        <span class="section-num">08</span>
+        <div>
+          <h2 class="section-title">URLs & Routers</h2>
+          <p class="section-subtitle">Mapeando endereços para as views</p>
+        </div>
+      </div>
+
+      <h3>URLs do App</h3>
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang lang-python">python — produtos/urls.py</span>
+          <button class="copy-btn" onclick="copyCode(this)">copiar</button>
+        </div>
+        <pre><code><span class="kw">from</span> django.urls <span class="kw">import</span> path, include
+<span class="kw">from</span> rest_framework.routers <span class="kw">import</span> DefaultRouter
+<span class="kw">from</span> . <span class="kw">import</span> views
+
+<span class="cm"># O Router gera todas as URLs automaticamente para o ViewSet</span>
+router = <span class="fn">DefaultRouter</span>()
+router.<span class="fn">register</span>(<span class="st">r'produtos'</span>, views.ProdutoViewSet)
+router.<span class="fn">register</span>(<span class="st">r'categorias'</span>, views.CategoriaViewSet)
+
+urlpatterns = [
+    path(<span class="st">''</span>, include(router.urls)),
+]
+
+<span class="cm"># URLs geradas automaticamente pelo router:
+# GET/POST   /api/produtos/
+# GET        /api/produtos/{id}/
+# PUT/PATCH  /api/produtos/{id}/
+# DELETE     /api/produtos/{id}/
+# GET        /api/produtos/em-destaque/   (nossa action)</span></code></pre>
+      </div>
+
+      <h3>URLs Raiz (core/urls.py)</h3>
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang lang-python">python — core/urls.py</span>
+          <button class="copy-btn" onclick="copyCode(this)">copiar</button>
+        </div>
+        <pre><code><span class="kw">from</span> django.contrib <span class="kw">import</span> admin
+<span class="kw">from</span> django.urls <span class="kw">import</span> path, include
+
+urlpatterns = [
+    path(<span class="st">'admin/'</span>, admin.site.urls),
+    path(<span class="st">'api/'</span>, include(<span class="st">'produtos.urls'</span>)),
+]
+
+<span class="cm"># Resultado: /api/produtos/, /api/categorias/, etc.</span></code></pre>
+      </div>
+
+      <h3>Endpoints Disponíveis</h3>
+      <table class="endpoint-table">
+        <thead><tr><th>Método</th><th>URL</th><th>Ação</th></tr></thead>
+        <tbody>
+          <tr><td><span class="method get">GET</span></td><td class="endpoint-url">/api/produtos/</td><td class="endpoint-desc">Lista todos os produtos</td></tr>
+          <tr><td><span class="method post">POST</span></td><td class="endpoint-url">/api/produtos/</td><td class="endpoint-desc">Cria novo produto</td></tr>
+          <tr><td><span class="method get">GET</span></td><td class="endpoint-url">/api/produtos/1/</td><td class="endpoint-desc">Detalhe do produto 1</td></tr>
+          <tr><td><span class="method put">PUT</span></td><td class="endpoint-url">/api/produtos/1/</td><td class="endpoint-desc">Atualiza produto 1 (completo)</td></tr>
+          <tr><td><span class="method patch">PATCH</span></td><td class="endpoint-url">/api/produtos/1/</td><td class="endpoint-desc">Atualiza produto 1 (parcial)</td></tr>
+          <tr><td><span class="method delete">DELETE</span></td><td class="endpoint-url">/api/produtos/1/</td><td class="endpoint-desc">Deleta produto 1</td></tr>
+          <tr><td><span class="method get">GET</span></td><td class="endpoint-url">/api/produtos/em-destaque/</td><td class="endpoint-desc">Action customizada</td></tr>
+          <tr><td><span class="method get">GET</span></td><td class="endpoint-url">/api/produtos/?search=camiseta</td><td class="endpoint-desc">Busca por nome</td></tr>
+          <tr><td><span class="method get">GET</span></td><td class="endpoint-url">/api/produtos/?status=ativo</td><td class="endpoint-desc">Filtra por status</td></tr>
+          <tr><td><span class="method get">GET</span></td><td class="endpoint-url">/api/produtos/?ordering=preco</td><td class="endpoint-desc">Ordena por preço</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- 9. AUTENTICAÇÃO -->
+    <section class="section" id="auth">
+      <div class="section-header">
+        <span class="section-num">09</span>
+        <div>
+          <h2 class="section-title">Autenticação</h2>
+          <p class="section-subtitle">JWT Token — o padrão moderno</p>
+        </div>
+      </div>
+
+      <p>Autenticação é o processo de verificar <strong>quem</strong> está fazendo a requisição. O método mais usado em APIs modernas é o <strong>JWT (JSON Web Token)</strong>.</p>
+
+      <div class="info-box info-tip">
+        <span class="icon">🔑</span>
+        <div><strong>Como funciona o JWT:</strong> O usuário faz login e recebe 2 tokens: <span class="ic">access</span> (expira em 5 min) e <span class="ic">refresh</span> (expira em dias). O <span class="ic">access</span> é enviado em toda requisição protegida. Quando expira, usa o <span class="ic">refresh</span> para pegar um novo access.</div>
+      </div>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang lang-bash">bash</span>
+          <button class="copy-btn" onclick="copyCode(this)">copiar</button>
+        </div>
+        <pre><code>pip install djangorestframework-simplejwt</code></pre>
+      </div>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang lang-python">python — settings.py</span>
+          <button class="copy-btn" onclick="copyCode(this)">copiar</button>
+        </div>
+        <pre><code><span class="kw">from</span> datetime <span class="kw">import</span> timedelta
+
+REST_FRAMEWORK = {
+    <span class="st">'DEFAULT_AUTHENTICATION_CLASSES'</span>: (
+        <span class="st">'rest_framework_simplejwt.authentication.JWTAuthentication'</span>,
+    ),
+}
+
+SIMPLE_JWT = {
+    <span class="st">'ACCESS_TOKEN_LIFETIME'</span>: timedelta(minutes=<span class="nm">60</span>),
+    <span class="st">'REFRESH_TOKEN_LIFETIME'</span>: timedelta(days=<span class="nm">7</span>),
+    <span class="st">'ROTATE_REFRESH_TOKENS'</span>: <span class="kw">True</span>,
+}</code></pre>
+      </div>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang lang-python">python — core/urls.py (adicionar)</span>
+          <button class="copy-btn" onclick="copyCode(this)">copiar</button>
+        </div>
+        <pre><code><span class="kw">from</span> rest_framework_simplejwt.views <span class="kw">import</span> (
+    TokenObtainPairView, TokenRefreshView
+)
+
+urlpatterns = [
+    path(<span class="st">'admin/'</span>, admin.site.urls),
+    path(<span class="st">'api/'</span>, include(<span class="st">'produtos.urls'</span>)),
+
+    <span class="cm"># Endpoints de autenticação JWT</span>
+    path(<span class="st">'api/auth/login/'</span>, TokenObtainPairView.as_view()),   <span class="cm"># POST → retorna tokens</span>
+    path(<span class="st">'api/auth/refresh/'</span>, TokenRefreshView.as_view()),   <span class="cm"># POST → renova access token</span>
+]</code></pre>
+      </div>
+
+      <h3>Usando o Token</h3>
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang lang-javascript">javascript — Autenticação JWT</span>
+          <button class="copy-btn" onclick="copyCode(this)">copiar</button>
+        </div>
+        <pre><code><span class="cm">// 1. Fazer login</span>
+<span class="kw">const</span> login = <span class="kw">async</span> (username, password) => {
+  <span class="kw">const</span> response = <span class="kw">await</span> <span class="fn">fetch</span>(<span class="st">'/api/auth/login/'</span>, {
+    method: <span class="st">'POST'</span>,
+    headers: { <span class="st">'Content-Type'</span>: <span class="st">'application/json'</span> },
+    body: <span class="fn">JSON.stringify</span>({ username, password })
+  });
+
+  <span class="kw">const</span> data = <span class="kw">await</span> response.<span class="fn">json</span>();
+  <span class="cm">// data = { access: "eyJ...", refresh: "eyJ..." }</span>
+
+  <span class="cm">// Salvar no localStorage</span>
+  localStorage.<span class="fn">setItem</span>(<span class="st">'access_token'</span>, data.access);
+  localStorage.<span class="fn">setItem</span>(<span class="st">'refresh_token'</span>, data.refresh);
+};
+
+<span class="cm">// 2. Fazer requisição autenticada</span>
+<span class="kw">const</span> getToken = () => localStorage.<span class="fn">getItem</span>(<span class="st">'access_token'</span>);
+
+<span class="kw">const</span> authFetch = (url, options = {}) => {
+  <span class="kw">return</span> <span class="fn">fetch</span>(url, {
+    ...options,
+    headers: {
+      <span class="st">'Content-Type'</span>: <span class="st">'application/json'</span>,
+      <span class="st">'Authorization'</span>: <span class="st">`Bearer ${<span class="fn">getToken</span>()}`</span>,  <span class="cm">// Token no header!</span>
+      ...options.headers,
+    }
+  });
+};</code></pre>
+      </div>
+    </section>
+
+    <!-- 10. PERMISSÕES -->
+    <section class="section" id="permissions">
+      <div class="section-header">
+        <span class="section-num">10</span>
+        <div>
+          <h2 class="section-title">Permissões</h2>
+          <p class="section-subtitle">Controlando quem pode fazer o quê</p>
+        </div>
+      </div>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang lang-python">python — Permissões built-in</span>
+          <button class="copy-btn" onclick="copyCode(this)">copiar</button>
+        </div>
+        <pre><code><span class="kw">from</span> rest_framework.permissions <span class="kw">import</span> (
+    AllowAny,                 <span class="cm"># Qualquer um (sem login)</span>
+    IsAuthenticated,          <span class="cm"># Precisa estar logado</span>
+    IsAdminUser,              <span class="cm"># Precisa ser staff/admin</span>
+    IsAuthenticatedOrReadOnly <span class="cm"># Leitura livre, escrita exige login</span>
+)
+
+<span class="kw">class</span> <span class="cl">ProdutoViewSet</span>(viewsets.ModelViewSet):
+    permission_classes = [IsAuthenticatedOrReadOnly]
+    ...</code></pre>
+      </div>
+
+      <h3>Permissão customizada</h3>
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang lang-python">python — Permissão customizada</span>
+          <button class="copy-btn" onclick="copyCode(this)">copiar</button>
+        </div>
+        <pre><code><span class="kw">from</span> rest_framework.permissions <span class="kw">import</span> BasePermission
+
+<span class="kw">class</span> <span class="cl">IsDonoDoProduto</span>(BasePermission):
+    <span class="st">"""Só o criador pode editar/deletar"""</span>
+
+    <span class="kw">def</span> <span class="fn">has_object_permission</span>(<span class="dc">self</span>, request, view, obj):
+        <span class="cm"># Leitura sempre permitida</span>
+        <span class="kw">if</span> request.method <span class="kw">in</span> [<span class="st">'GET'</span>, <span class="st">'HEAD'</span>, <span class="st">'OPTIONS'</span>]:
+            <span class="kw">return</span> <span class="kw">True</span>
+
+        <span class="cm"># Escrita só para o criador</span>
+        <span class="kw">return</span> obj.criado_por == request.user
+
+
+<span class="cm"># Usar na view:</span>
+<span class="kw">class</span> <span class="cl">ProdutoViewSet</span>(viewsets.ModelViewSet):
+    permission_classes = [IsAuthenticated, IsDonoDoProduto]</code></pre>
+      </div>
+    </section>
+
+    <!-- 11. FETCH API JS -->
+    <section class="section" id="fetch">
+      <div class="section-header">
+        <span class="section-num">11</span>
+        <div>
+          <h2 class="section-title">JavaScript — Fetch API</h2>
+          <p class="section-subtitle">Consumindo a API no frontend sem bibliotecas</p>
+        </div>
+      </div>
+
+      <p>A <strong>Fetch API</strong> é nativa do JavaScript moderno. Não precisa instalar nada — funciona direto no navegador.</p>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang lang-javascript">javascript — Configuração base</span>
+          <button class="copy-btn" onclick="copyCode(this)">copiar</button>
+        </div>
+        <pre><code><span class="cm">// Configuração base da API</span>
+<span class="kw">const</span> API_BASE = <span class="st">'http://localhost:8000/api'</span>;
+<span class="kw">const</span> TOKEN = () => localStorage.<span class="fn">getItem</span>(<span class="st">'access_token'</span>);
+
+<span class="cm">// Headers padrão com autenticação</span>
+<span class="kw">const</span> <span class="fn">headers</span> = (withAuth = <span class="kw">true</span>) => ({
+  <span class="st">'Content-Type'</span>: <span class="st">'application/json'</span>,
+  ...(withAuth && TOKEN() ? { <span class="st">'Authorization'</span>: <span class="st">`Bearer ${<span class="fn">TOKEN</span>()}`</span> } : {})
+});
+
+<span class="cm">// Handler de erros reutilizável</span>
+<span class="kw">const</span> handleResponse = <span class="kw">async</span> (response) => {
+  <span class="kw">if</span> (!response.ok) {
+    <span class="kw">const</span> error = <span class="kw">await</span> response.<span class="fn">json</span>().catch(() => ({}));
+    <span class="kw">throw new</span> <span class="fn">Error</span>(<span class="fn">JSON.stringify</span>(error) || <span class="st">`HTTP ${response.status}`</span>);
+  }
+  <span class="cm">// 204 No Content não tem body</span>
+  <span class="kw">if</span> (response.status === <span class="nm">204</span>) <span class="kw">return null</span>;
+  <span class="kw">return</span> response.<span class="fn">json</span>();
+};</code></pre>
+      </div>
+
+      <div class="tab-container">
+        <div class="tab-buttons">
+          <button class="tab-btn active" onclick="switchTab(this, 'js-get')">GET — Listar</button>
+          <button class="tab-btn" onclick="switchTab(this, 'js-post')">POST — Criar</button>
+          <button class="tab-btn" onclick="switchTab(this, 'js-put')">PUT/PATCH — Editar</button>
+          <button class="tab-btn" onclick="switchTab(this, 'js-delete')">DELETE — Deletar</button>
+        </div>
+
+        <div class="tab-panel active" id="js-get">
+          <div class="code-block">
+            <div class="code-header">
+              <span class="code-lang lang-javascript">javascript — GET</span>
+              <button class="copy-btn" onclick="copyCode(this)">copiar</button>
+            </div>
+            <pre><code><span class="cm">// Listar todos os produtos</span>
+<span class="kw">const</span> listarProdutos = <span class="kw">async</span> () => {
+  <span class="kw">try</span> {
+    <span class="kw">const</span> response = <span class="kw">await</span> <span class="fn">fetch</span>(`${API_BASE}/produtos/`, {
+      method: <span class="st">'GET'</span>,
+      headers: <span class="fn">headers</span>()
+    });
+    <span class="kw">const</span> data = <span class="kw">await</span> <span class="fn">handleResponse</span>(response);
+    console.<span class="fn">log</span>(data);
+    <span class="cm">// data.results → array de produtos (com paginação)</span>
+    <span class="cm">// data.count → total de registros</span>
+    <span class="cm">// data.next → URL da próxima página</span>
+    <span class="kw">return</span> data;
+  } <span class="kw">catch</span> (err) {
+    console.<span class="fn">error</span>(<span class="st">'Erro ao listar:'</span>, err.message);
+  }
+};
+
+<span class="cm">// Buscar produto específico</span>
+<span class="kw">const</span> getProduto = <span class="kw">async</span> (id) => {
+  <span class="kw">const</span> response = <span class="kw">await</span> <span class="fn">fetch</span>(`${API_BASE}/produtos/${id}/`, {
+    headers: <span class="fn">headers</span>()
+  });
+  <span class="kw">return</span> <span class="fn">handleResponse</span>(response);
+};
+
+<span class="cm">// Com filtros e busca</span>
+<span class="kw">const</span> buscarProdutos = <span class="kw">async</span> (busca, status) => {
+  <span class="kw">const</span> params = <span class="kw">new</span> <span class="fn">URLSearchParams</span>({
+    ...(busca && { search: busca }),
+    ...(status && { status }),
+    ordering: <span class="st">'preco'</span>
+  });
+  <span class="kw">const</span> response = <span class="kw">await</span> <span class="fn">fetch</span>(`${API_BASE}/produtos/?${params}`, {
+    headers: <span class="fn">headers</span>()
+  });
+  <span class="kw">return</span> <span class="fn">handleResponse</span>(response);
+};</code></pre>
+          </div>
+        </div>
+
+        <div class="tab-panel" id="js-post">
+          <div class="code-block">
+            <div class="code-header">
+              <span class="code-lang lang-javascript">javascript — POST</span>
+              <button class="copy-btn" onclick="copyCode(this)">copiar</button>
+            </div>
+            <pre><code><span class="cm">// Criar novo produto</span>
+<span class="kw">const</span> criarProduto = <span class="kw">async</span> (dadosProduto) => {
+  <span class="kw">try</span> {
+    <span class="kw">const</span> response = <span class="kw">await</span> <span class="fn">fetch</span>(`${API_BASE}/produtos/`, {
+      method: <span class="st">'POST'</span>,
+      headers: <span class="fn">headers</span>(),
+      body: <span class="fn">JSON.stringify</span>(dadosProduto)
+    });
+    <span class="kw">const</span> novoProduto = <span class="kw">await</span> <span class="fn">handleResponse</span>(response);
+    console.<span class="fn">log</span>(<span class="st">'Criado!'</span>, novoProduto);
+    <span class="kw">return</span> novoProduto;
+  } <span class="kw">catch</span> (err) {
+    console.<span class="fn">error</span>(<span class="st">'Erro ao criar:'</span>, err.message);
+    <span class="cm">// err.message pode conter os erros de validação do DRF</span>
+    <span class="cm">// Ex: '{"nome":["Este campo é obrigatório."]}'</span>
+  }
+};
+
+<span class="cm">// Exemplo de uso</span>
+<span class="fn">criarProduto</span>({
+  nome: <span class="st">'Camiseta Básica'</span>,
+  descricao: <span class="st">'100% algodão'</span>,
+  preco: <span class="st">'49.90'</span>,
+  estoque: <span class="nm">100</span>,
+  status: <span class="st">'ativo'</span>,
+  categoria: <span class="nm">1</span>  <span class="cm">// ID da categoria</span>
+});</code></pre>
+          </div>
+        </div>
+
+        <div class="tab-panel" id="js-put">
+          <div class="code-block">
+            <div class="code-header">
+              <span class="code-lang lang-javascript">javascript — PUT & PATCH</span>
+              <button class="copy-btn" onclick="copyCode(this)">copiar</button>
+            </div>
+            <pre><code><span class="cm">// PUT = atualiza tudo (envia todos os campos)</span>
+<span class="kw">const</span> atualizarProduto = <span class="kw">async</span> (id, dados) => {
+  <span class="kw">const</span> response = <span class="kw">await</span> <span class="fn">fetch</span>(`${API_BASE}/produtos/${id}/`, {
+    method: <span class="st">'PUT'</span>,
+    headers: <span class="fn">headers</span>(),
+    body: <span class="fn">JSON.stringify</span>(dados)
+  });
+  <span class="kw">return</span> <span class="fn">handleResponse</span>(response);
+};
+
+<span class="cm">// PATCH = atualiza só os campos enviados</span>
+<span class="kw">const</span> atualizarParcial = <span class="kw">async</span> (id, camposParaAtualizar) => {
+  <span class="kw">const</span> response = <span class="kw">await</span> <span class="fn">fetch</span>(`${API_BASE}/produtos/${id}/`, {
+    method: <span class="st">'PATCH'</span>,
+    headers: <span class="fn">headers</span>(),
+    body: <span class="fn">JSON.stringify</span>(camposParaAtualizar)
+  });
+  <span class="kw">return</span> <span class="fn">handleResponse</span>(response);
+};
+
+<span class="cm">// Só atualiza o preço (sem precisar enviar todos os campos)</span>
+<span class="fn">atualizarParcial</span>(<span class="nm">1</span>, { preco: <span class="st">'59.90'</span> });</code></pre>
+          </div>
+        </div>
+
+        <div class="tab-panel" id="js-delete">
+          <div class="code-block">
+            <div class="code-header">
+              <span class="code-lang lang-javascript">javascript — DELETE</span>
+              <button class="copy-btn" onclick="copyCode(this)">copiar</button>
+            </div>
+            <pre><code><span class="kw">const</span> deletarProduto = <span class="kw">async</span> (id) => {
+  <span class="kw">const</span> response = <span class="kw">await</span> <span class="fn">fetch</span>(`${API_BASE}/produtos/${id}/`, {
+    method: <span class="st">'DELETE'</span>,
+    headers: <span class="fn">headers</span>()
+  });
+  <span class="cm">// DELETE bem-sucedido retorna 204 (sem conteúdo)</span>
+  <span class="kw">if</span> (response.status === <span class="nm">204</span>) {
+    console.<span class="fn">log</span>(<span class="st">'Produto deletado com sucesso!'</span>);
+    <span class="kw">return true</span>;
+  }
+  <span class="kw">throw new</span> <span class="fn">Error</span>(<span class="st">'Erro ao deletar'</span>);
+};
+
+<span class="cm">// Com confirmação</span>
+<span class="kw">const</span> deletarComConfirmacao = <span class="kw">async</span> (id, nome) => {
+  <span class="kw">if</span> (!<span class="fn">confirm</span>(<span class="st">`Deletar "${nome}"? Esta ação não pode ser desfeita.`</span>)) <span class="kw">return</span>;
+  <span class="kw">const</span> sucesso = <span class="kw">await</span> <span class="fn">deletarProduto</span>(id);
+  <span class="kw">if</span> (sucesso) <span class="fn">atualizarLista</span>();  <span class="cm">// Recarrega a lista</span>
+};</code></pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 12. AXIOS -->
+    <section class="section" id="axios">
+      <div class="section-header">
+        <span class="section-num">12</span>
+        <div>
+          <h2 class="section-title">Axios — A alternativa popular</h2>
+          <p class="section-subtitle">Mais recursos, sintaxe mais limpa</p>
+        </div>
+      </div>
+
+      <p>Axios é uma biblioteca muito usada que simplifica requisições HTTP. Vantagens: interceptors, cancelamento de requests, transformação automática de JSON.</p>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang lang-bash">bash</span>
+          <button class="copy-btn" onclick="copyCode(this)">copiar</button>
+        </div>
+        <pre><code>npm install axios
+<span class="cm"># ou via CDN no HTML:</span>
+<span class="cm"># &lt;script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"&gt;&lt;/script&gt;</span></code></pre>
+      </div>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang lang-javascript">javascript — Configuração Axios</span>
+          <button class="copy-btn" onclick="copyCode(this)">copiar</button>
+        </div>
+        <pre><code><span class="cm">// Cria instância configurada</span>
+<span class="kw">const</span> api = axios.<span class="fn">create</span>({
+  baseURL: <span class="st">'http://localhost:8000/api'</span>,
+  headers: { <span class="st">'Content-Type'</span>: <span class="st">'application/json'</span> }
+});
+
+<span class="cm">// Interceptor: adiciona o token em TODA requisição automaticamente</span>
+api.interceptors.request.<span class="fn">use</span>((config) => {
+  <span class="kw">const</span> token = localStorage.<span class="fn">getItem</span>(<span class="st">'access_token'</span>);
+  <span class="kw">if</span> (token) config.headers.Authorization = <span class="st">`Bearer ${token}`</span>;
+  <span class="kw">return</span> config;
+});
+
+<span class="cm">// Interceptor: trata erros globalmente</span>
+api.interceptors.response.<span class="fn">use</span>(
+  (response) => response.data,   <span class="cm">// Retorna só os dados</span>
+  <span class="kw">async</span> (error) => {
+    <span class="kw">if</span> (error.response?.status === <span class="nm">401</span>) {
+      <span class="cm">// Token expirado → tenta renovar</span>
+      <span class="kw">const</span> refresh = localStorage.<span class="fn">getItem</span>(<span class="st">'refresh_token'</span>);
+      <span class="kw">try</span> {
+        <span class="kw">const</span> { data } = <span class="kw">await</span> axios.<span class="fn">post</span>(<span class="st">'/api/auth/refresh/'</span>, { refresh });
+        localStorage.<span class="fn">setItem</span>(<span class="st">'access_token'</span>, data.access);
+        <span class="cm">// Reenviar request original</span>
+        <span class="kw">return</span> api(error.config);
+      } <span class="kw">catch</span> {
+        <span class="cm">// Refresh também expirou → redireciona para login</span>
+        window.location.href = <span class="st">'/login'</span>;
+      }
+    }
+    <span class="kw">return</span> Promise.<span class="fn">reject</span>(error);
+  }
+);
+
+<span class="cm">// Uso simplificado</span>
+<span class="kw">const</span> produtos = <span class="kw">await</span> api.<span class="fn">get</span>(<span class="st">'/produtos/'</span>);
+<span class="kw">const</span> novo = <span class="kw">await</span> api.<span class="fn">post</span>(<span class="st">'/produtos/'</span>, { nome: <span class="st">'Tênis'</span>, preco: <span class="st">'199.90'</span> });
+<span class="kw">const</span> atualizado = <span class="kw">await</span> api.<span class="fn">patch</span>(<span class="st">'/produtos/1/'</span>, { preco: <span class="st">'179.90'</span> });
+<span class="kw">await</span> api.<span class="fn">delete</span>(<span class="st">'/produtos/1/'</span>);</code></pre>
+      </div>
+    </section>
+
+    <!-- 13. CRUD COMPLETO JS -->
+    <section class="section" id="crud-js">
+      <div class="section-header">
+        <span class="section-num">13</span>
+        <div>
+          <h2 class="section-title">CRUD Completo em JS</h2>
+          <p class="section-subtitle">Exemplo real de um módulo completo</p>
+        </div>
+      </div>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang lang-javascript">javascript — produtos.js (módulo completo)</span>
+          <button class="copy-btn" onclick="copyCode(this)">copiar</button>
+        </div>
+        <pre><code><span class="cm">// === MÓDULO DE PRODUTOS ===</span>
+<span class="kw">class</span> <span class="cl">ProdutosAPI</span> {
+  constructor(baseURL) {
+    <span class="dc">this</span>.url = `${baseURL}/produtos`;
+  }
+
+  <span class="kw">async</span> <span class="fn">listar</span>({ pagina = <span class="nm">1</span>, busca = <span class="st">''</span>, status = <span class="st">''</span> } = {}) {
+    <span class="kw">const</span> params = <span class="kw">new</span> <span class="fn">URLSearchParams</span>({ page: pagina, search: busca });
+    <span class="kw">if</span> (status) params.<span class="fn">set</span>(<span class="st">'status'</span>, status);
+
+    <span class="kw">const</span> res = <span class="kw">await</span> <span class="fn">fetch</span>(`${<span class="dc">this</span>.url}/?${params}`, {
+      headers: { <span class="st">'Authorization'</span>: `Bearer ${<span class="fn">getToken</span>()}` }
+    });
+    <span class="kw">return</span> res.<span class="fn">json</span>();
+  }
+
+  <span class="kw">async</span> <span class="fn">buscar</span>(id) {
+    <span class="kw">const</span> res = <span class="kw">await</span> <span class="fn">fetch</span>(`${<span class="dc">this</span>.url}/${id}/`, {
+      headers: { <span class="st">'Authorization'</span>: `Bearer ${<span class="fn">getToken</span>()}` }
+    });
+    <span class="kw">if</span> (!res.ok) <span class="kw">throw new</span> <span class="fn">Error</span>(<span class="st">'Produto não encontrado'</span>);
+    <span class="kw">return</span> res.<span class="fn">json</span>();
+  }
+
+  <span class="kw">async</span> <span class="fn">criar</span>(dados) {
+    <span class="kw">const</span> res = <span class="kw">await</span> <span class="fn">fetch</span>(`${<span class="dc">this</span>.url}/`, {
+      method: <span class="st">'POST'</span>,
+      headers: {
+        <span class="st">'Content-Type'</span>: <span class="st">'application/json'</span>,
+        <span class="st">'Authorization'</span>: `Bearer ${<span class="fn">getToken</span>()}`
+      },
+      body: <span class="fn">JSON.stringify</span>(dados)
+    });
+
+    <span class="kw">if</span> (res.status === <span class="nm">400</span>) {
+      <span class="kw">const</span> erros = <span class="kw">await</span> res.<span class="fn">json</span>();
+      <span class="kw">throw new</span> <span class="fn">Error</span>(<span class="fn">JSON.stringify</span>(erros));  <span class="cm">// Erros de validação</span>
+    }
+
+    <span class="kw">return</span> res.<span class="fn">json</span>();
+  }
+
+  <span class="kw">async</span> <span class="fn">atualizar</span>(id, dados, parcial = <span class="kw">true</span>) {
+    <span class="kw">const</span> res = <span class="kw">await</span> <span class="fn">fetch</span>(`${<span class="dc">this</span>.url}/${id}/`, {
+      method: parcial ? <span class="st">'PATCH'</span> : <span class="st">'PUT'</span>,
+      headers: {
+        <span class="st">'Content-Type'</span>: <span class="st">'application/json'</span>,
+        <span class="st">'Authorization'</span>: `Bearer ${<span class="fn">getToken</span>()}`
+      },
+      body: <span class="fn">JSON.stringify</span>(dados)
+    });
+    <span class="kw">return</span> res.<span class="fn">json</span>();
+  }
+
+  <span class="kw">async</span> <span class="fn">deletar</span>(id) {
+    <span class="kw">const</span> res = <span class="kw">await</span> <span class="fn">fetch</span>(`${<span class="dc">this</span>.url}/${id}/`, {
+      method: <span class="st">'DELETE'</span>,
+      headers: { <span class="st">'Authorization'</span>: `Bearer ${<span class="fn">getToken</span>()}` }
+    });
+    <span class="kw">return</span> res.status === <span class="nm">204</span>;
+  }
+}
+
+<span class="cm">// === USO NO FRONTEND ===</span>
+<span class="kw">const</span> produtosAPI = <span class="kw">new</span> <span class="fn">ProdutosAPI</span>(<span class="st">'http://localhost:8000/api'</span>);
+
+<span class="cm">// Renderizar lista de produtos</span>
+<span class="kw">async</span> <span class="kw">function</span> <span class="fn">renderizarProdutos</span>() {
+  <span class="kw">const</span> lista = document.<span class="fn">getElementById</span>(<span class="st">'lista-produtos'</span>);
+  lista.innerHTML = <span class="st">'&lt;p&gt;Carregando...&lt;/p&gt;'</span>;
+
+  <span class="kw">try</span> {
+    <span class="kw">const</span> data = <span class="kw">await</span> produtosAPI.<span class="fn">listar</span>();
+
+    lista.innerHTML = data.results.<span class="fn">map</span>(p => <span class="st">`
+      &lt;div class="produto-card" data-id="${p.id}"&gt;
+        &lt;h3&gt;${p.nome}&lt;/h3&gt;
+        &lt;p&gt;R$ ${parseFloat(p.preco).toFixed(2)}&lt;/p&gt;
+        &lt;span class="status ${p.status}"&gt;${p.status}&lt;/span&gt;
+        &lt;button onclick="editarProduto(${p.id})"&gt;Editar&lt;/button&gt;
+        &lt;button onclick="confirmarDelete(${p.id}, '${p.nome}')"&gt;Deletar&lt;/button&gt;
+      &lt;/div&gt;
+    `</span>).<span class="fn">join</span>(<span class="st">''</span>);
+  } <span class="kw">catch</span> (err) {
+    lista.innerHTML = <span class="st">`&lt;p class="erro"&gt;Erro: ${err.message}&lt;/p&gt;`</span>;
+  }
+}</code></pre>
+      </div>
+    </section>
+
+    <!-- 14. CORS -->
+    <section class="section" id="cors">
+      <div class="section-header">
+        <span class="section-num">14</span>
+        <div>
+          <h2 class="section-title">CORS — Liberando o Acesso</h2>
+          <p class="section-subtitle">Por que o JS não consegue chamar a API?</p>
+        </div>
+      </div>
+
+      <div class="info-box info-err">
+        <span class="icon">🚫</span>
+        <div><strong>CORS Error</strong> é o erro mais comum ao conectar JS com Django. O navegador bloqueia requisições de uma origem (ex: <span class="ic">localhost:3000</span>) para outra (ex: <span class="ic">localhost:8000</span>) por segurança.</div>
+      </div>
+
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang lang-python">python — settings.py</span>
+          <button class="copy-btn" onclick="copyCode(this)">copiar</button>
+        </div>
+        <pre><code>INSTALLED_APPS = [
+    ...
+    <span class="st">'corsheaders'</span>,
+    ...
+]
+
+MIDDLEWARE = [
+    <span class="cm"># CORS deve ser o PRIMEIRO middleware!</span>
+    <span class="st">'corsheaders.middleware.CorsMiddleware'</span>,
+    <span class="st">'django.middleware.common.CommonMiddleware'</span>,
+    ...
+]
+
+<span class="cm"># Permitir origens específicas (produção)</span>
+CORS_ALLOWED_ORIGINS = [
+    <span class="st">'http://localhost:3000'</span>,    <span class="cm"># React dev</span>
+    <span class="st">'http://localhost:5173'</span>,    <span class="cm"># Vite dev</span>
+    <span class="st">'https://meusite.com'</span>,      <span class="cm"># Produção</span>
+]
+
+<span class="cm"># OU permitir tudo (APENAS em desenvolvimento!)</span>
+CORS_ALLOW_ALL_ORIGINS = <span class="kw">True</span>  <span class="cm"># ⚠️ Nunca em produção!</span>
+
+<span class="cm"># Permitir envio de cookies/credenciais</span>
+CORS_ALLOW_CREDENTIALS = <span class="kw">True</span></code></pre>
+      </div>
+    </section>
+
+    <!-- 15. FILTROS -->
+    <section class="section" id="filtros">
+      <div class="section-header">
+        <span class="section-num">15</span>
+        <div>
+          <h2 class="section-title">Filtros & Paginação</h2>
+          <p class="section-subtitle">Buscas, ordenação e controle de dados</p>
+        </div>
+      </div>
+
+      <h3>Filtros Avançados</h3>
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang lang-python">python — FilterSet customizado</span>
+          <button class="copy-btn" onclick="copyCode(this)">copiar</button>
+        </div>
+        <pre><code><span class="kw">import</span> django_filters
+<span class="kw">from</span> .models <span class="kw">import</span> Produto
+
+<span class="kw">class</span> <span class="cl">ProdutoFilter</span>(django_filters.FilterSet):
+    <span class="cm"># Filtros de intervalo de preço</span>
+    preco_min = django_filters.<span class="fn">NumberFilter</span>(field_name=<span class="st">'preco'</span>, lookup_expr=<span class="st">'gte'</span>)
+    preco_max = django_filters.<span class="fn">NumberFilter</span>(field_name=<span class="st">'preco'</span>, lookup_expr=<span class="st">'lte'</span>)
+
+    <span class="cm"># Filtro por nome (contém, case-insensitive)</span>
+    nome = django_filters.<span class="fn">CharFilter</span>(lookup_expr=<span class="st">'icontains'</span>)
+
+    <span class="kw">class</span> <span class="cl">Meta</span>:
+        model = Produto
+        fields = [<span class="st">'status'</span>, <span class="st">'categoria'</span>, <span class="st">'nome'</span>]
+
+<span class="cm"># Usar na view:
+# GET /api/produtos/?preco_min=10&preco_max=100
+# GET /api/produtos/?nome=camisa</span></code></pre>
+      </div>
+
+      <h3>Paginação Customizada</h3>
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang lang-python">python — Paginação</span>
+          <button class="copy-btn" onclick="copyCode(this)">copiar</button>
+        </div>
+        <pre><code><span class="kw">from</span> rest_framework.pagination <span class="kw">import</span> PageNumberPagination
+
+<span class="kw">class</span> <span class="cl">PaginacaoPadrao</span>(PageNumberPagination):
+    page_size = <span class="nm">10</span>
+    page_size_query_param = <span class="st">'page_size'</span>  <span class="cm"># ?page_size=20</span>
+    max_page_size = <span class="nm">100</span>
+
+<span class="cm"># Resposta paginada:
+# {
+#   "count": 150,
+#   "next": "http://localhost:8000/api/produtos/?page=2",
+#   "previous": null,
+#   "results": [ {...}, {...}, ... ]
+# }</span></code></pre>
+      </div>
+
+      <h3>Consumindo paginação no JS</h3>
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang lang-javascript">javascript — Paginação</span>
+          <button class="copy-btn" onclick="copyCode(this)">copiar</button>
+        </div>
+        <pre><code><span class="kw">async</span> <span class="kw">function</span> <span class="fn">carregarPagina</span>(pagina = <span class="nm">1</span>) {
+  <span class="kw">const</span> res = <span class="kw">await</span> <span class="fn">fetch</span>(`/api/produtos/?page=${pagina}`);
+  <span class="kw">const</span> { count, next, previous, results } = <span class="kw">await</span> res.<span class="fn">json</span>();
+
+  <span class="fn">renderizarProdutos</span>(results);
+
+  <span class="cm">// Renderizar paginação</span>
+  <span class="kw">const</span> totalPaginas = Math.<span class="fn">ceil</span>(count / <span class="nm">10</span>);
+  <span class="fn">renderizarPaginacao</span>(pagina, totalPaginas, next, previous);
+}
+
+<span class="kw">function</span> <span class="fn">renderizarPaginacao</span>(atual, total, next, previous) {
+  <span class="kw">const</span> nav = document.<span class="fn">getElementById</span>(<span class="st">'paginacao'</span>);
+  nav.innerHTML = <span class="st">`
+    &lt;button ${!previous ? 'disabled' : ''} onclick="carregarPagina(${atual-1})"&gt;
+      ← Anterior
+    &lt;/button&gt;
+    &lt;span&gt;Página ${atual} de ${total}&lt;/span&gt;
+    &lt;button ${!next ? 'disabled' : ''} onclick="carregarPagina(${atual+1})"&gt;
+      Próxima →
+    &lt;/button&gt;
+  `</span>;
+}</code></pre>
+      </div>
+    </section>
+
+    <!-- 16. DEMO INTERATIVO -->
+    <section class="section" id="demo">
+      <div class="section-header">
+        <span class="section-num">16</span>
+        <div>
+          <h2 class="section-title">Demo — Testador de Requests</h2>
+          <p class="section-subtitle">Simule como o JavaScript chama a API</p>
+        </div>
+      </div>
+
+      <p>Aqui você pode ver como seria o JSON de request e response para cada operação:</p>
+
+      <div class="demo-box">
+        <div class="demo-header">
+          <div class="demo-dot demo-dot-r"></div>
+          <div class="demo-dot demo-dot-y"></div>
+          <div class="demo-dot demo-dot-g"></div>
+          <span style="margin-left:0.5rem">Simulador de Requests HTTP</span>
+        </div>
+        <div class="demo-body">
+          <div style="display:flex; gap:0.5rem; flex-wrap:wrap; margin-bottom:1rem;">
+            <button class="demo-btn" onclick="simularRequest('GET_LIST')">GET Lista</button>
+            <button class="demo-btn" onclick="simularRequest('GET_ONE')">GET /1/</button>
+            <button class="demo-btn" onclick="simularRequest('POST')">POST Criar</button>
+            <button class="demo-btn" onclick="simularRequest('PATCH')">PATCH Editar</button>
+            <button class="demo-btn demo-btn-danger" onclick="simularRequest('DELETE')">DELETE</button>
+            <button class="demo-btn" style="background:var(--surface2);border:1px solid var(--border);" onclick="simularRequest('AUTH')">JWT Login</button>
+          </div>
+          <div id="demo-request-label" style="font-family:'Space Mono',monospace;font-size:0.75rem;color:var(--muted);margin-bottom:0.4rem;">Clique num botão acima para simular uma requisição</div>
+          <div class="demo-output" id="demo-output">// O resultado aparecerá aqui...</div>
+        </div>
+      </div>
+
+      <div class="info-box info-ok">
+        <span class="icon">✅</span>
+        <div><strong>Próximos passos:</strong> Para testar sua API real, use o <strong>Browsable API</strong> do DRF (acesse <span class="ic">/api/</span> no navegador) ou instale o <strong>Insomnia</strong> / <strong>Postman</strong> para testes mais avançados.</div>
+      </div>
+
+      <h3>Rodando o servidor</h3>
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang lang-bash">bash</span>
+          <button class="copy-btn" onclick="copyCode(this)">copiar</button>
+        </div>
+        <pre><code><span class="cm"># Criar superusuário para o admin</span>
+python manage.py createsuperuser
+
+<span class="cm"># Rodar o servidor de desenvolvimento</span>
+python manage.py runserver
+
+<span class="cm"># Acesse:</span>
+<span class="cm"># http://localhost:8000/api/          → Browsable API</span>
+<span class="cm"># http://localhost:8000/admin/        → Painel admin</span>
+<span class="cm"># http://localhost:8000/api/produtos/ → Endpoint de produtos</span></code></pre>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<button class="mobile-nav-toggle" onclick="toggleNav()" title="Menu">☰</button>
+<a class="back-top" id="backTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑ topo</a>
+
+<script>
+// ===== NAVEGAÇÃO =====
+function scrollTo(id) {
+  const el = document.getElementById(id);
+  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  if (window.innerWidth <= 900) {
+    document.getElementById('sidebar').classList.remove('open');
+  }
+}
+
+function toggleNav() {
+  document.getElementById('sidebar').classList.toggle('open');
+}
+
+// ===== PROGRESS BAR =====
+window.addEventListener('scroll', () => {
+  const scroll = window.scrollY;
+  const max = document.body.scrollHeight - window.innerHeight;
+  document.getElementById('progressBar').style.width = (scroll / max * 100) + '%';
+
+  // Back to top
+  const bt = document.getElementById('backTop');
+  scroll > 300 ? bt.classList.add('visible') : bt.classList.remove('visible');
+
+  // Highlight active nav
+  const sections = ['intro','conceitos','instalacao','projeto','model','serializer','views','urls','auth','permissions','fetch','axios','crud-js','cors','filtros','demo'];
+  const links = document.querySelectorAll('.nav-link');
+  let active = 0;
+  sections.forEach((id, i) => {
+    const el = document.getElementById(id);
+    if (el && el.getBoundingClientRect().top < window.innerHeight * 0.4) active = i;
+  });
+  links.forEach((l, i) => {
+    l.classList.toggle('active', i === active + 1);
+  });
+});
+
+// ===== TABS =====
+function switchTab(btn, panelId) {
+  const container = btn.closest('.tab-container');
+  container.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  container.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById(panelId).classList.add('active');
+}
+
+// ===== COPY CODE =====
+function copyCode(btn) {
+  const pre = btn.closest('.code-block').querySelector('pre');
+  const text = pre.innerText;
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = '✓ copiado!';
+    btn.classList.add('copied');
+    setTimeout(() => {
+      btn.textContent = 'copiar';
+      btn.classList.remove('copied');
+    }, 2000);
+  });
+}
+
+// ===== DEMO SIMULADOR =====
+const demos = {
+  GET_LIST: {
+    label: 'GET /api/produtos/ → 200 OK',
+    output: `// REQUEST
+fetch('http://localhost:8000/api/produtos/', {
+  method: 'GET',
+  headers: { 'Authorization': 'Bearer eyJhbGci...' }
+})
+
+// RESPONSE 200 OK
+{
+  "count": 3,
+  "next": "http://localhost:8000/api/produtos/?page=2",
+  "previous": null,
+  "results": [
+    {
+      "id": 1,
+      "nome": "Camiseta Básica",
+      "preco": "49.90",
+      "estoque": 100,
+      "status": "ativo",
+      "categoria": 1,
+      "criado_em": "2024-01-15T10:30:00Z"
+    },
+    {
+      "id": 2,
+      "nome": "Calça Jeans",
+      "preco": "139.90",
+      "estoque": 50,
+      "status": "ativo",
+      "categoria": 1,
+      "criado_em": "2024-01-14T08:00:00Z"
+    }
+  ]
+}`
+  },
+  GET_ONE: {
+    label: 'GET /api/produtos/1/ → 200 OK',
+    output: `// REQUEST
+fetch('http://localhost:8000/api/produtos/1/', {
+  method: 'GET',
+  headers: { 'Authorization': 'Bearer eyJhbGci...' }
+})
+
+// RESPONSE 200 OK
+{
+  "id": 1,
+  "nome": "Camiseta Básica",
+  "descricao": "Camiseta 100% algodão, disponível em várias cores",
+  "preco": "49.90",
+  "estoque": 100,
+  "status": "ativo",
+  "em_estoque": true,
+  "categoria": {
+    "id": 1,
+    "nome": "Roupas",
+    "descricao": "Vestuário em geral"
+  },
+  "criado_em": "2024-01-15T10:30:00Z",
+  "atualizado_em": "2024-01-16T14:22:00Z"
+}`
+  },
+  POST: {
+    label: 'POST /api/produtos/ → 201 Created',
+    output: `// REQUEST
+fetch('http://localhost:8000/api/produtos/', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization': 'Bearer eyJhbGci...'
+  },
+  body: JSON.stringify({
+    nome: 'Tênis Esportivo',
+    descricao: 'Perfeito para corrida',
+    preco: '199.90',
+    estoque: 30,
+    status: 'ativo',
+    categoria: 2
+  })
+})
+
+// RESPONSE 201 CREATED
+{
+  "id": 3,
+  "nome": "Tênis Esportivo",
+  "descricao": "Perfeito para corrida",
+  "preco": "199.90",
+  "estoque": 30,
+  "status": "ativo",
+  "categoria": 2,
+  "criado_em": "2024-01-16T15:45:00Z"
+}
+
+// RESPONSE 400 BAD REQUEST (se dados inválidos)
+{
+  "preco": ["Certifique-se que este valor seja maior ou igual a 0.01."],
+  "categoria": ["Objeto com pk=999 não existe."]
+}`
+  },
+  PATCH: {
+    label: 'PATCH /api/produtos/1/ → 200 OK',
+    output: `// REQUEST — só envia o que vai mudar
+fetch('http://localhost:8000/api/produtos/1/', {
+  method: 'PATCH',
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization': 'Bearer eyJhbGci...'
+  },
+  body: JSON.stringify({
+    preco: '59.90',
+    estoque: 80
+  })
+})
+
+// RESPONSE 200 OK — retorna o objeto completo atualizado
+{
+  "id": 1,
+  "nome": "Camiseta Básica",
+  "preco": "59.90",   ← atualizado!
+  "estoque": 80,      ← atualizado!
+  "status": "ativo",
+  "categoria": 1,
+  "atualizado_em": "2024-01-16T16:00:00Z"
+}`
+  },
+  DELETE: {
+    label: 'DELETE /api/produtos/1/ → 204 No Content',
+    output: `// REQUEST
+fetch('http://localhost:8000/api/produtos/1/', {
+  method: 'DELETE',
+  headers: { 'Authorization': 'Bearer eyJhbGci...' }
+})
+
+// RESPONSE 204 NO CONTENT
+// (sem body — resposta vazia)
+// status: 204 ← indica sucesso na deleção
+
+// Se não encontrar:
+// RESPONSE 404 NOT FOUND
+{
+  "detail": "Não encontrado."
+}
+
+// Se sem permissão:
+// RESPONSE 403 FORBIDDEN
+{
+  "detail": "Você não tem permissão para executar essa ação."
+}`
+  },
+  AUTH: {
+    label: 'POST /api/auth/login/ → 200 OK',
+    output: `// REQUEST — fazer login e obter tokens JWT
+fetch('http://localhost:8000/api/auth/login/', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    username: 'meu_usuario',
+    password: 'minha_senha'
+  })
+})
+
+// RESPONSE 200 OK
+{
+  "access": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "refresh": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+}
+
+// Salvar e usar:
+localStorage.setItem('access_token', data.access)
+
+// Em toda requisição protegida:
+// Authorization: Bearer eyJhbGciOiJIUzI1NiIs...
+
+// RESPONSE 401 (credenciais erradas)
+{
+  "detail": "Sem permissão (credenciais incorretas)."
+}`
+  }
+};
+
+function simularRequest(type) {
+  const demo = demos[type];
+  document.getElementById('demo-request-label').textContent = '→ ' + demo.label;
+  const output = document.getElementById('demo-output');
+  output.style.opacity = '0';
+  output.textContent = demo.output;
+  setTimeout(() => { output.style.transition = 'opacity 0.3s'; output.style.opacity = '1'; }, 50);
+}
+</script>
+</body>
+</html>

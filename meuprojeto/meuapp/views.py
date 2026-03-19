@@ -10,4 +10,9 @@ def home(request):
 class PokemonViewSet(viewsets.ModelViewSet):
     queryset = Pokemon.objects.all()
     serializer_class = PokemonSerializer
+
+def pokemon_list(request):
+    return render(request, 'meuapp/api_teste.html')
      
+def tutorial(request):
+    return render(request, 'meuapp/tutorial.html')
